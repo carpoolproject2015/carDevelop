@@ -9,7 +9,7 @@ $(document).ready(function() {
     $('#btnBoundEP').click(function() {
         SetMarkerStatus(2);
     });
-	
+
     //cal path
     $('#btnPathCal').click(function() {
         if (StartPoint && EndPoint)
@@ -22,7 +22,7 @@ $(document).ready(function() {
     //btn path compare
     $('#next').click(function() {
         if (pathJSON != null && PathLength != null)
-        	nextStep(pathJSON, PathLength);
+            nextStep(pathJSON, PathLength);
         else {
             alert("尚未選取路線");
         }
@@ -79,57 +79,53 @@ function Initialize() {
     directionsRender.setMap(map);
 }
 
-function updateLocation(id, latitude, longitude)
-{
-	var data = '{"id":"' + id + '","curpoint":[{"latitude":"' + latitude + '","longitude":"' + longitude + '"}]}';
-	var server = "http://noname0930.no-ip.org/carpool/api/";
-	var url = server + 'update_location.php?data=' + data;
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open("GET", url, true);
-	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");		
-	xmlhttp.onreadystatechange = function() 
-	{
-		if(xmlhttp.readyState == 4 && xmlhttp.status == 200) 
-		{
-			console.log(xmlhttp.responseText);	
-		}
-	}
-	xmlhttp.send();		
+function updateLocation(id, latitude, longitude) {
+    var data = '{"id":"' + id + '","curpoint":[{"latitude":"' + latitude + '","longitude":"' + longitude + '"}]}';
+    var server = "http://noname0930.no-ip.org/carpool/api/";
+    var url = server + 'update_location.php?data=' + data;
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("GET", url, true);
+    xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+            console.log(xmlhttp.responseText);
+        }
+    }
+    xmlhttp.send();
 }
 
-function DetectLocation(id, second, seton) 
-{
-	var GetCurrentPos = function() {
-		if (navigator.geolocation) {
-			navigator.geolocation.getCurrentPosition(function(position) {
-					updateLocation(id, position.coords.latitude, position.coords.longitude);
-				},
-				function(error) {
-					switch (error.code) {
-						case error.PERMISSION_DENIED:
-							console.log("User denied the request for Geolocation.");
-							break;
-						case error.POSITION_UNAVAILABLE:
-							console.log("Location information is .");
-							break;
-						case error.TIMEOUT:
-							console.log("The request to get user location timed out.");
-							break;
-						case error.UNKNOWN_ERROR:
-							console.log("An unknown error occurred.");
-							break;
-					}
-				});
-		} else {
-			alert("Not support geolocation");
-		}
-	}
-	var thisid = null;
-	if (seton) {
-		thisid = setInterval(GetCurrentPos, second * 1000);
-	} else {
-		clearInterval(thisid);
-	}
+function DetectLocation(id, second, seton) {
+    var GetCurrentPos = function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                    updateLocation(id, position.coords.latitude, position.coords.longitude);
+                },
+                function(error) {
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            console.log("User denied the request for Geolocation.");
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            console.log("Location information is .");
+                            break;
+                        case error.TIMEOUT:
+                            console.log("The request to get user location timed out.");
+                            break;
+                        case error.UNKNOWN_ERROR:
+                            console.log("An unknown error occurred.");
+                            break;
+                    }
+                });
+        } else {
+            alert("Not support geolocation");
+        }
+    }
+    var thisid = null;
+    if (seton) {
+        thisid = setInterval(GetCurrentPos, second * 1000);
+    } else {
+        clearInterval(thisid);
+    }
 }
 
 
@@ -174,7 +170,7 @@ function GetUserCurrentPos() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
             if (StartPoint) {
-                if (StartPoint.k != position.coords.latitude || StartPoint.D != position.coords.longitude) {
+                if (StartPoint.A != position.coords.latitude || StartPoint.F != position.coords.longitude) {
                     if (StartPointMarker != null)
                         StartPointMarker.setMap(null);
 
@@ -197,8 +193,8 @@ function GetUserCurrentPos() {
                     StartPointMarker.setMap(null);
 
                 StartPoint = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-				
-				alert(position.coords.latitude + ', ' + position.coords.longitude);
+
+                alert(position.coords.latitude + ', ' + position.coords.longitude);
 
                 if (StartPoint != null)
                     StartPointStatus = true;
@@ -281,13 +277,13 @@ function SetPathMarkerDot(index, latLng) {
         position: latLng,
         map: map,
         icon: "img/path_dot.png",
-        title: latLng.k + ", " + latLng.D
+        title: latLng.A + ", " + latLng.F
     });
     marker = PathDotsMarkers[index];
 
     google.maps.event.addListener(marker, 'click', function() {
         new google.maps.InfoWindow({
-            content: '<div>' + latLng.k + ', ' + latLng.D + '</div>'
+            content: '<div>' + latLng.A + ', ' + latLng.F + '</div>'
         }).open(map, marker);
     });
 }
