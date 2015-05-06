@@ -108,8 +108,8 @@ function PathCompare(p1, p2, directive) {
                 }
             }
         }
-		if (oid.length == 0)
-        	return null;
+        if (oid.length == 0)
+            return null;
         return oid;
     } else {
         return null;
