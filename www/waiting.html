@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>Let's Carpool</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="dist/css/bootstrap.min.css" rel="stylesheet" >
+		
+		<!--load jPushMenu.css, required-->
+		<link rel="stylesheet" type="text/css" href="dist/css/demo.css"/>
+		<link rel="stylesheet" type="text/css" href="dist/css/jPushMenu.css"/>
+		
+		<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+		
+		<!-- font -->
+		<link href='http://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic' rel='stylesheet' type='text/css'>
+		<link href='http://fonts.googleapis.com/css?family=Raleway:400,300,700' rel='stylesheet' type='text/css'>
+		
+		<!-- count down -->
+		<link href="dist/css/soon.css" rel="stylesheet">
+		
+		<!--load GCM-->
+		<script src="dist/js/push_script.js"></script>
+		
+	</head>
+	
+	
+	<body>
+		<nav class="navbar navbar-inverse" role="navigation" style="position: fixed;width:100%; z-index:1;">
+			<ul class="list-inline">
+				<li>
+					<a class="toggle-menu menu-left push-body" style="color:#FFFFFF">
+						<h4><span class="glyphicon glyphicon-align-justify"></span></h4>
+					</a>
+				</li>
+				<li>
+					<a id="logo" href="">
+						<img src="img/logo19950.png" height="50" width="199" alt="Data System Lab Logo">
+					</a>
+				</li>
+			</ul>				
+		</nav>	
+		
+		<nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-left">
+			<h3>目錄</h3>
+			<a id="wall" href="">動態牆<span class="glyphicon glyphicon-user"></span></a>
+			<a id="friendlist" href="">好友清單<span class="glyphicon glyphicon-user"></span></a>
+			<a id="about" href="">關於<span class="glyphicon glyphicon-user"></span></a>
+			<a id="setting" href="">設定<span class="glyphicon glyphicon-user"></span></a>
+		</nav>			
+		
+		<br></br>
+		<br></br>
+		
+		
+		<center>
+			<div style="z-index:0;">
+				<!-- START TIMER -->
+				<div id="timer" data-animated="FadeIn">
+					<h3><p id="message"></p></h3>
+					<div id="minutes" class="timer_box"></div>
+					<div id="seconds" class="timer_box"></div>
+				</div>
+				<br></br>
+				<!-- END TIMER -->   
+			</div>
+		</center>	
+		
+		<div id="dialog" class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<center>
+						<br></br>						
+						<img id="image" src="img/circle.png" alt="..." class="img-circle">
+						<h2 id="name"></h2>
+						<h3><div id="message"></div></h3>
+						<br></br>
+						<button id="accept" class="btn btn-default" type="button" value="">開始共乘</button>
+						<button id="reject" class="btn btn-default" type="button" value="">取消</button>
+						<br></br>
+						<br></br>
+					</center>	
+				</div>
+			</div>
+		</div>	
+		
+		<!--load jQuery, required-->
+		<script src="dist/js/jquery-1.9.1.min.js"></script>
+		<!--load jPushMenu, required-->
+		<script src="dist/js/jPushMenu.js"></script>
+		
+		<!--call jPushMenu, required-->
+		<script>
+			jQuery(document).ready(function($) {
+				$('.toggle-menu').jPushMenu();
+			});
+		</script>
+			
+		<!-- Bootstrap core JavaScript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="dist/js/bootstrap.min.js"></script>
+		<script src="dist/js/plugins.js"></script>
+		<script src="dist/js/custom.js"></script>
+		<script src="dist/js/waiting.js"></script>
+		
+	</body>
+</html>

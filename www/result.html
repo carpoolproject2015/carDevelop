@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>Let's Carpool</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="dist/css/bootstrap.min.css" rel="stylesheet">
+		
+		<!--load jPushMenu.css, required-->
+		<link rel="stylesheet" type="text/css" href="dist/css/demo.css"/>
+		<link rel="stylesheet" type="text/css" href="dist/css/jPushMenu.css"/>
+		
+		<link href="dist/css/timeline.css" rel="stylesheet">
+	</head>
+	
+	
+	<body>
+		<nav class="navbar navbar-inverse" role="navigation" style="position: fixed;width:100%; z-index:1;">
+			<ul class="list-inline">
+				<li>
+					<a class="toggle-menu menu-left push-body" style="color:#FFFFFF">
+						<h4><span class="glyphicon glyphicon-align-justify"></span></h4>
+					</a>
+				</li>
+				<li>
+					<a id="logo" href="">
+						<img src="img/logo19950.png" height="50" width="199" alt="Data System Lab Logo">
+					</a>
+				</li>
+			</ul>				
+		</nav>	
+
+		<nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-left">
+			<h3>目錄</h3>
+			<a id="wall" href="">動態牆<span class="glyphicon glyphicon-user"></span></a>
+			<a id="friendlist" href="">好友清單<span class="glyphicon glyphicon-user"></span></a>
+			<a id="about" href="">關於<span class="glyphicon glyphicon-user"></span></a>
+			<a id="setting" href="">設定<span class="glyphicon glyphicon-user"></span></a>
+		</nav>		
+		
+		<br></br>
+		
+		<center>
+			<ul class="list-inline">
+				<li><h3>媒合</h3></li>
+				<li><h1><small><span class="label label-default">結果</span></small></h1></li>
+			</ul>	
+		</center>
+
+		<div class="bs-example" data-example-id="hoverable-table" style="margin:auto; z-index:0; width:95%;">
+			<table id="table" class="table table-hover">			
+			</table>
+		</div>	
+		
+		<div class="modal fade bs-example-modal-sm" tabindex="-1" role="content" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-sm">
+				<div class="modal-content">
+					<center>
+						<h1><small><span class="label label-default">司機資訊</span></small></h1>
+						<img id="dialog_image" src="img/circle.png" alt="..." class="img-circle">
+						<h3 id="dialog_name"></h3>
+						<h5 id="dialog_rating"></h5>
+						<button id="submit" class="btn btn-default" type="button" value="" >送出</button>
+						<div id="state"></div>
+						<br></br>
+					</center>	
+				</div>
+			</div>
+		</div>	
+		
+		<button id="next" type="button" class="btn btn-primary btn-lg btn-block
+		" style="position:fixed; bottom:0px; z-index:1;">返回</button>
+		<!--load jQuery, required-->
+		<script src="dist/js/jquery-1.9.1.min.js"></script>
+		<!--load jPushMenu, required-->
+		<script src="dist/js/jPushMenu.js"></script>
+		
+		<!--call jPushMenu, required-->
+		<script>
+			jQuery(document).ready(function($) {
+				$('.toggle-menu').jPushMenu();
+			});
+		</script>				
+		<!-- Bootstrap core JavaScript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="dist/js/result.js"></script>
+		<script src="dist/js/bootstrap.min.js"></script>
+	</body>
+</html>

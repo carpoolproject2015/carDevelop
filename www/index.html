@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>Let's Carpool</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="dist/css/bootstrap.min.css" rel="stylesheet">
+		
+		<!--load jPushMenu.css, required-->
+		<link rel="stylesheet" type="text/css" href="dist/css/demo.css"/>
+		<link rel="stylesheet" type="text/css" href="dist/css/jPushMenu.css"/>
+	</head>
+	
+	<body>	
+		<nav class="navbar navbar-inverse" role="navigation" style="position: fixed;width:100%;">
+			<ul class="list-inline">
+				<li>
+					<a class="toggle-menu menu-left push-body" style="color:#FFFFFF">
+						<h4><span class="glyphicon glyphicon-align-justify"></span></h4>
+					</a>
+				</li>
+				<li>
+					<a id="logo" href="">
+						<img src="img/logo19950.png" height="50" width="199" alt="Data System Lab Logo">
+					</a>
+				</li>
+			</ul>				
+		</nav>	
+		
+		<nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-left">
+			<h3>目錄</h3>
+			<a id="wall" href="">動態牆<span class="glyphicon glyphicon-user"></span></a>
+			<a id="friendlist" href="">好友清單<span class="glyphicon glyphicon-user"></span></a>
+			<a id="about" href="">關於<span class="glyphicon glyphicon-user"></span></a>
+			<a id="setting" href="">設定<span class="glyphicon glyphicon-user"></span></a>
+		</nav>
+
+		<center>			
+			<div class="container">
+				<br></br>
+				<h3>目前狀態</h3>
+				<h2>
+					<span id="state" class="label label-default">尚未登入</span>
+				</h2>
+				<img id="image" src="img/circle.png" alt="..." class="img-circle">
+				<h3 id="name"></h3>
+				<button id="login" type="button" class="btn btn-primary">Log in with Facebook</button>
+			</div>
+			
+			<button id="register_button" data-toggle="modal" data-target=".bs-example-modal-sm" style="display:none" type="button" class="btn btn-warning">註冊</button>
+			
+			<button id="next" type="button" class="btn btn-primary btn-lg btn-block
+			" style="position:fixed; bottom:0px;" disabled>下一步</button>
+
+			<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+			  <div class="modal-dialog modal-sm" >
+				<div class="modal-content">
+					<h1><small><span class="label label-default">註冊</span></small></h1>
+					<img id="dialog_image" src="img/circle.png" alt="..." class="img-circle">
+					<h3 id="dialog_name"></h3>
+					<div class="input-group" style="width:60%">
+						<input id="phone" type="text" class="form-control" placeholder="手機號碼">
+						<span class="input-group-btn">
+						<button id="submit" class="btn btn-default" type="button">送出</button>
+						</span>
+					 </div>
+					 <div id="register_state"></div>
+					<br></br>
+				  </div>
+				</div>
+			</div>	
+		</center>
+		
+		<!--load jQuery, required-->
+		<script src="dist/js/jquery-1.9.1.min.js"></script>
+		<!--load jPushMenu, required-->
+		<script src="dist/js/jPushMenu.js"></script>
+		
+		<!--call jPushMenu, required-->
+		<script>
+		jQuery(document).ready(function($) {
+			$('.toggle-menu').jPushMenu();
+		});
+		</script>		
+		
+		<script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="dist/js/facebookConnectPlugin.js"></script>
+		<script type="text/javascript" src="dist/js/PushNotification.js"></script>
+		<script type="text/javascript" src="dist/js/index.js"></script>
+		<!-- Bootstrap core JavaScript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="dist/js/bootstrap.min.js"></script>
+	</body>
+</html>

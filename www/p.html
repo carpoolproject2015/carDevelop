@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<title>Let's Carpool</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="dist/css/bootstrap.min.css" rel="stylesheet">
+
+		<!--load jPushMenu.css, required-->
+		<link rel="stylesheet" type="text/css" href="dist/css/demo.css"/>
+		<link rel="stylesheet" type="text/css" href="dist/css/jPushMenu.css"/>
+		<link rel="stylesheet" type="text/css" href="dist/css/carpoolmap.css">
+
+		<!-- JQuery JavaScript -->
+		<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+		<!--Google Map-->
+		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+
+		<!--load jPushMenu, required-->
+		<script src="dist/js/jPushMenu.js"></script>
+		<!-- This APP JavaScript & CSS used -->
+		
+		<script src="dist/js/json2.js"></script>
+		<script src="dist/js/pathcompare.js"></script>
+		<script src="dist/js/carpoolmap.js"></script>
+	</head>
+	
+	<body>
+		<nav class="navbar navbar-inverse" role="navigation">
+			<ul class="list-inline">
+				<li>
+					<a class="toggle-menu menu-left push-body" style="color:#FFFFFF">
+						<h4><span class="glyphicon glyphicon-align-justify"></span></h4>
+					</a>
+				</li>
+				<li>
+					<a id="logo" href="">
+						<img src="img/logo19950.png" height="50" width="199" alt="Data System Lab Logo">
+					</a>
+				</li>
+			</ul>
+		</nav>
+
+		<nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-left">
+			<h3>功能</h3>
+			<a id="btnBoundEP">終點<img src="img/end_pin.png" height="15" width="12" alt="Bound Left Low" style="margin-right: 10px;"></a>
+		</nav>
+
+		<div id="map-block" class="map-block">
+			<div id="map-canvas"></div>
+		</div>
+
+		<button id="next" type="button" class="btn btn-primary btn-lg btn-block" style="position:fixed; bottom:0px; z-index:0;">下一步</button>
+
+		<script>
+			var url = window.location.toString();
+			var id = "";
+			var role = "";
+			var json = "";
+			var file = "";
+			var pathStr = "";
+			var driver_fid ="";
+			var wait_time="";
+			var condition = new Array();
+			var distance = "";
+			var percentage = "";
+			//var dis_2 = [];
+			//var time_2 = [];
+			
+			var finalres = [];
+			var finalid = [];
+			var waiting = 0;
+			var oidd = [];
+			var did = [];
+			var dnow = [];
+			var jstr = "";
+			var pathJSON2 = "";
+			var res_num = 0;
+			var total = 0;
+			var per = 0;
+			var totalL = 0;
+			var passenger_path = "";
+			var passenger_json = "";
+			var normal_onoff = "";
+			var count = 0;
+			var ori_2 = [];
+			var des_2 = [];
+			
+			var server = "http://noname0930.no-ip.org/carpool/api/";
+			var local = "file:///android_asset/www/";
+			
+			initialize();
+			function initialize()
+			{
+				var str = url.substring(url.indexOf("{"), url.length);
+				file = str;				
+				
+				json = JSON.parse(decodeURIComponent(str));
+				id = json.id;
+				role = json.role;
+				
+				file = decodeURIComponent(file);
+				//console.log(file);
+				
+				condition = json.condition;
+				distance = condition[0]['distance'];
+				percentage = condition[0]['percentage'];
+				waiting = condition[0]['waiting'];
+				
+				DetectLocation(id, 10, true);	
+				
+				setURL();
+			}
+			function setURL()
+			{
+				document.getElementById("logo").href = 'http://noname0930.no-ip.org/carpool/index.html?data=' + '{"id":"' + id + '"}';
+			}
+			function pauseTime(millis) 
+			{
+				var date = new Date();
+				var curDate = null;
+
+				do { curDate = new Date(); } 
+				while(curDate-date < millis);
+			}	
+			function requestAPI(url, data, gid)//傳資料給php
+			{
+				url += '?data=' + data;
+				//console.log(url);
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.open("GET", url, true);
+				xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+				xmlhttp.onreadystatechange = function()
+				{
+					if(xmlhttp.readyState == 4 && xmlhttp.status == 200)
+					{
+						if(gid == "path"){
+							pathStr = xmlhttp.responseText;		//php回傳的路徑資料 --- json格式
+							requestAPI(server + "filter2.php",file,"other");
+							console.log("pathStr");
+							
+						}else if(gid == "other"){
+						
+							driver_fid = xmlhttp.responseText;	//回傳司機fid
+							did = [];
+							while(driver_fid.match(',') != null){
+								var tt = driver_fid.substring(driver_fid.indexOf('\"')+1,driver_fid.indexOf(',')-1);
+								did.push(tt);
+								driver_fid = driver_fid.substring(driver_fid.indexOf(',')+1,driver_fid.lastIndexOf(']')+1);
+							}
+							did.push(driver_fid.substring(driver_fid.indexOf('\"')+1,driver_fid.lastIndexOf('\"')));
+							console.log("did:"+ did);
+							var getnow = '{"ids":[';
+							for(var i = 0; i < did.length; i++){
+								if(i != did.length - 1)
+									getnow += '{"id":"' + did[i] + '"},';
+								else
+									getnow += '{"id":"' + did[i] + '"}]}';
+							}
+							console.log("getnow:" + getnow);
+							requestAPI("http://noname0930.no-ip.org/carpool/api/get_driver_now.php",getnow,"drivernow");
+							
+							
+						}else if(gid == "drivernow"){
+							var now = xmlhttp.responseText;
+							now = JSON.parse(now);
+							
+							for(var i = 0; i < now.length ; i++){
+								var nnow = JSON.parse(now[i]);
+								console.log(nnow["latitude"] + ',' + nnow["longitude"]);
+								dnow.push(new google.maps.LatLng(nnow["latitude"],nnow["longitude"]));
+							}
+							console.log("dnow:" + dnow);
+							nextStep1();
+							
+						}else if(gid == "store"){
+							
+							var set_carpool = '{"id":"' + id + '","carpool":' + JSON.stringify(finalres) + '}'; 
+							console.log(set_carpool);
+							requestAPI("http://noname0930.no-ip.org/carpool/api/set_carpool.php",set_carpool,"update");
+							
+						}else if(gid == "update"){
+							
+							window.location = 'file:///android_asset/www/result.html?data=' + jstr;
+							
+						}else {
+						
+							wait_time = xmlhttp.responseText;
+							console.log("wait_time:" + wait_time);
+							CalDistance(ori_2, des_2, parseInt(gid));
+						}
+					}
+
+				}
+				xmlhttp.send();
+			}
+			function CalDistance(ori, des, index) {
+				var success = function(response, status) {
+					if (status == google.maps.DistanceMatrixStatus.OK) {
+						//console.log(response);
+						total++;
+						//alert("total:" + total);
+						console.log(total);
+							
+						var origins = response.originAddresses;
+						var destinations = response.destinationAddresses;
+						
+						var dis_2 = [];
+						var time_2 = [];
+						
+						for (var i = 0; i < origins.length; i++) {
+							
+							var results = response.rows[i].elements;
+							var dis_temp = [];
+							var time_temp = [];
+							for (var j = 0; j < results.length; j++) {
+								var element = results[j];
+								dis_temp.push(element.distance.value);
+								time_temp.push(element.duration.value);
+							}
+							dis_2.push(dis_temp);
+							time_2.push(time_temp);
+						}
+						console.log("dis_2:" + dis_2[0][0] + "|" + dis_2[1][1] +"|"+ dis_2[2][2] +"|"+ dis_2[3][3]);
+						console.log("time_2:" + time_2[0][0] + "|" + time_2[1][1] +"|"+ time_2[2][2] +"|"+ time_2[3][3]);
+						
+						var finalwait = 0;
+						if(time_2[3][3] > time_2[1][1]){
+							finalwait = time_2[3][3];
+						}else{
+							finalwait = time_2[1][1];
+						}
+						
+						normal_onoff = '","on_d":"' + dis_2[1][1] + '","off_d":"' + dis_2[2][2] + '","wait":"' + finalwait;
+						
+						console.log("normal_onoff:" + normal_onoff );
+						per = (dis_2[0][0] / totalL * 100);
+						
+						console.log(per);
+						console.log(percentage);
+						
+						var tell = true;
+						
+						if(per < percentage){
+							finalres.pop();
+							tell = false;
+							console.log("tell-1");
+						}
+						alert('d:' + parseInt(distance) + ',' + 'dis_2' + dis_2[1][1]);
+						var dd = parseInt(distance);
+						if(dis_2[1][1] > dd){		
+							finalres.pop();
+							tell = false;
+							console.log("tell0");
+						}
+						console.log('d:' + dis_2[1][1] + ',per:' + per + ',time:' + finalwait);
+						console.log('wait_time:' + wait_time + ',' + 'waiting' + waiting);
+						
+						if(finalwait > wait_time * 60){
+							finalres.pop();
+							tell = false;
+							console.log("tell1");
+						}else if(finalwait > waiting * 60){
+							finalres.pop();
+							tell = false;
+							console.log("tell2");
+						}else{
+							finalid.push(did[parseInt(index)]);
+						}
+	
+						//console.log("success");
+						console.log("tell:" + tell);
+						//alert('tell:' + tell);
+						if(tell){
+							res_num++;	
+									
+							for(var i = 0; i < finalres.length; i++){
+								var fr_temp = [];
+								for(var j = 0; j < finalres[i].length;j++){
+									fr_temp.push(new google.maps.LatLng(finalres[i][j].k,finalres[i][j].D));
+								}
+								finalres[i] = fr_temp;
+							}
+					
+							console.log(finalres);
+		
+							if(jstr != ""){
+								jstr = jstr + ',{"did":"' + did[parseInt(index)] + '","percentage":"' + per + normal_onoff + '"}';
+							}else{
+								jstr = '[{"did":"' + did[parseInt(index)] + '","percentage":"' + per + normal_onoff + '"}';
+							}
+							console.log(jstr);
+						}
+						
+						console.log(res_num + ", count:" + count);
+						console.log(pathJSON2.length + "," + total);
+						alert("count:" + count + ",total:" + total + ",pathJSON2.length:" + pathJSON2.length);
+						
+						if((total + count) == pathJSON2.length){
+							alert('res_num:'+res_num);
+							if(res_num != 0){
+								jstr += "]";
+								jstr = '{"id":"' + id + '","result":' + jstr + '}';
+								alert("JSON:" + jstr);
+								console.log("JSON:" + jstr);
+								requestAPI("http://noname0930.no-ip.org/carpool/api/requester.php",passenger_json,"store");	
+							}
+							else{
+								alert("無符合條件之重疊路徑");
+							}
+						}
+						
+					}
+				}
+
+				var disMatCal = new google.maps.DistanceMatrixService();
+				disMatCal.getDistanceMatrix({
+					origins: ori,
+					destinations: des,
+					travelMode: google.maps.TravelMode.WALKING,
+					unitSystem: google.maps.UnitSystem.METRIC,
+					avoidHighways: true,
+					avoidTolls: true
+				}, success);
+			}
+			function nextStep1(){//比對路徑
+				pathJSON2 = JSON.parse(decodeURIComponent(pathStr));//解碼JSON
+				console.log(pathJSON);//司機與乘客路徑陣列
+				
+				if(pathJSON2.length == 0) //代表沒有符合的司機
+					alert("無司機符合篩選結果");//直接跳至無司機符合篩選結果
+				
+				var p1 = ConvertToGoogleLatLng(JSON.parse(passenger_path));//乘客路徑pathJSON2[pathJSON2.length-1]
+				
+				count = 0;
+				console.log("pathJSON2.length:" + pathJSON2.length);
+				for(var i=0;i < pathJSON2.length ;i++){
+					
+					var p2 = ConvertToGoogleLatLng(JSON.parse(pathJSON2[i]));//司機路徑
+					console.log(p1);
+					console.log(p2);
+					oidd = PathCompare(p1, p2, true);
+					console.log("oidd:" + oidd);
+					
+					if(oidd != null){
+						alert('oidd');
+						finalres.push(oidd[0]);	//儲存共乘路徑
+
+						ori_2 = [];
+						des_2 = [];
+						
+						ori_2.push(oidd[0][0]);
+						ori_2.push(p1[0]);
+						ori_2.push(p1[p1.length - 1]);
+						ori_2.push(dnow[i]);								
+						
+						des_2.push(oidd[0][oidd[0].length - 1]);//計算共乘距離				
+						des_2.push(oidd[0][0]);//計算乘客起點到上車點的距離
+						des_2.push(oidd[0][oidd[0].length - 1]);//計算下車點與乘客終點的距離
+						des_2.push(oidd[0][0]);//計算司機到上車點距離
+						
+						var temp = '{"id":"' + did[i] +'"}';
+						console.log("temp:" + temp);
+						requestAPI("http://noname0930.no-ip.org/carpool/api/get_wait.php",temp,i);
+		
+					}else{
+						count++;
+					}
+					
+				}
+				console.log(count);
+				
+				if(count == pathJSON2.length){
+					alert("無符合條件之重疊路徑");
+				}
+				
+				
+			}
+			function nextStep(pathJSON, PathLength)
+			{
+				passenger_path = "";
+				passenger_path = pathJSON;
+				totaL = PathLength;
+				count = 0;
+				var jj = json + "";
+				json = JSON.stringify(json);
+				
+				var pathTemp = ConvertToGoogleLatLng(JSON.parse(pathJSON));
+				totalL = PathLength;
+				passenger_json = file.substring(0, file.length - 1) + ',"path":' + pathJSON 
+				+ ',"start":' + '{"latitude":"' + StartPoint.k + '","longitude":"' + StartPoint.D + '"}' 
+				+ ',"end":' + '{"latitude":"' + pathTemp[pathTemp.length - 1].k + '","longitude":"' + pathTemp[pathTemp.length - 1].D + '"}';
+				
+				console.log(passenger_json);
+				
+				json = json.substring(0, json.length - 1) + ',"path":' + pathJSON + '}';
+				
+				
+				if(role == "driver")
+				{
+					var url = "";
+					url = server + 'reciever.php?data=' + json;
+					
+					alert("reciever.php " + url);
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.open("GET", url, true);
+					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");		
+					xmlhttp.onreadystatechange = function() 
+					{
+						if(xmlhttp.readyState == 4 && xmlhttp.status == 200) 
+						{		
+							alert("REs " + xmlhttp.responseText);
+							alert("L " + local + 'trace.html?data={"role":"driver","id":"' + id + '"}');
+							window.location = local + 'trace.html?data={"role":"driver","id":"' + id + '"}';
+						}
+					}
+					xmlhttp.send();	
+				}
+				else if(role == "passenger")
+				{					
+				
+					console.log("passenger_json:" + passenger_json);
+					console.log("file:" + file);
+					requestAPI(server + "filter.php",file,"path");
+					
+					
+				}			
+				// window.location = 'http://noname0930.no-ip.org/carpool/path.html?data=' + json;
+				
+			}
+		</script>
+		<!-- Bootstrap core JavaScript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="dist/js/bootstrap.min.js"></script>
+	</body>
+</html>

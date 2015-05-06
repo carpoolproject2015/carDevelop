@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<link rel="icon" href="../../favicon.ico">
+
+		<title>Let's Carpool</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="dist/css/bootstrap.min.css" rel="stylesheet" >
+		
+		<!--load jPushMenu.css, required-->
+		<link rel="stylesheet" type="text/css" href="dist/css/demo.css"/>
+		<link rel="stylesheet" type="text/css" href="dist/css/jPushMenu.css"/>
+	</head>
+	
+	
+	<body>
+		<nav class="navbar navbar-inverse" role="navigation" style="position: fixed;width:100%; z-index:1;">
+			<ul class="list-inline">
+				<li>
+					<a class="toggle-menu menu-left push-body" style="color:#FFFFFF">
+						<h4><span class="glyphicon glyphicon-align-justify"></span></h4>
+					</a>
+				</li>
+				<li>
+					<a id="logo" href="">
+						<img src="img/logo19950.png" height="50" width="199" alt="Data System Lab Logo">
+					</a>
+				</li>
+			</ul>				
+		</nav>	
+		
+		<nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-left">
+			<h3>目錄</h3>
+			<a id="wall" href="">動態牆<span class="glyphicon glyphicon-user"></span></a>
+			<a id="friendlist" href="">好友清單<span class="glyphicon glyphicon-user"></span></a>
+			<a id="about" href="">關於<span class="glyphicon glyphicon-user"></span></a>
+			<a id="setting" href="">設定<span class="glyphicon glyphicon-user"></span></a>
+		</nav>			
+		
+		<br></br>
+		<br></br>
+		<center>
+			<div style="z-index:0">
+				<div class="btn-group btn-group-justified" role="group" style="width:60%">			
+					<a id="0" class="btn btn-default" role="button" >乘客</a>
+					<a id="1" class="btn btn-default" role="button">司機</a>		
+				</div>	
+				<br></br>
+				<div id="content" style="width:60%; display:none;">
+					<div id="passenger" style="display:none">
+						<label for="distance">上下車行走距離</label>
+						<select id = "distance" class="form-control">
+							<option value="100">100公尺</option>
+							<option value="200">200公尺</option>
+							<option value="300">300公尺</option>
+							<option value="400">400公尺</option>
+							<option value="500">500公尺</option>
+						</select>
+						<label for="percentage">共乘路段比例</label>
+						<select id = "percentage" class="form-control">
+							<option value="10">10%</option>
+							<option value="20">20%</option>
+							<option value="30">30%</option>
+							<option value="40">40%</option>	
+							<option value="50">50%</option>
+						</select>
+						<label for="rating">司機評價</label></li>
+					</div>
+					
+					<div id="driver" style="display:none">
+						<label for="cid">車牌號碼</label></li>
+						<input type="text" id="cid" class="form-control" placeholder="">							
+						<label for="seat">可提供共乘數</label>
+						<select id = "seat" class="form-control">
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+						</select>
+						<label for="rating">乘客評價</label>					
+					</div>
+					<select id = "rating" class="form-control">
+						<option value="0">0</option>
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>						
+					</select>	
+					<label for="time">等待時間</label>
+					<select id = "time" class="form-control">
+						<option value="5">5分鐘</option>
+						<option value="10">10分鐘</option>
+						<option value="15">15分鐘</option>
+						<option value="20">20分鐘</option>						
+					</select>
+				</div>
+			</div>
+		</center>
+
+		<br></br>
+		<button id="next" type="button" class="btn btn-primary btn-lg btn-block" style="position:fixed; bottom:0px; z-index:1;" disabled>下一步</button>		
+		
+		<!--load jQuery, required-->
+		<script src="dist/js/jquery-1.9.1.min.js"></script>
+		<!--load jPushMenu, required-->
+		<script src="dist/js/jPushMenu.js"></script>
+		
+		<!--call jPushMenu, required-->
+		<script>
+			jQuery(document).ready(function($) {
+				$('.toggle-menu').jPushMenu();
+			});
+		</script>
+			
+		<!-- Bootstrap core JavaScript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="dist/js/initialization.js"></script>
+		<script src="dist/js/bootstrap.min.js"></script>
+	</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="description" content="">
+		<meta name="author" content="">
+		<link rel="icon" href="../../favicon.ico">
+
+		<title>Let's Carpool</title>
+
+		<!-- Bootstrap core CSS -->
+		<link href="dist/css/bootstrap.min.css" rel="stylesheet">
+		
+		<!--load jPushMenu.css, required-->
+		<link rel="stylesheet" type="text/css" href="dist/css/demo.css"/>
+		<link rel="stylesheet" type="text/css" href="dist/css/jPushMenu.css"/>
+	</head>
+	
+	
+	<body>
+		<nav class="navbar navbar-inverse" role="navigation" style="position: fixed;width:100%;">
+			<ul class="list-inline">
+				<li>
+					<a class="toggle-menu menu-left push-body" style="color:#FFFFFF">
+						<h4><span class="glyphicon glyphicon-align-justify"></span></h4>
+					</a>
+				</li>
+				<li>
+					<a id="logo" href="">
+						<img src="img/logo19950.png" height="50" width="199" alt="Data System Lab Logo">
+					</a>
+				</li>
+			</ul>				
+		</nav>	
+		
+		<nav class="cbp-spmenu cbp-spmenu-vertical cbp-spmenu-left">
+			<h3>目錄</h3>
+			<a id="wall" href="">動態牆<span class="glyphicon glyphicon-user"></span></a>
+			<a id="friendlist" href="">好友清單<span class="glyphicon glyphicon-user"></span></a>
+			<a id="about" href="">關於<span class="glyphicon glyphicon-user"></span></a>
+			<a id="setting" href="">設定<span class="glyphicon glyphicon-user"></span></a>
+		</nav>
+		<br></br>
+		<center>	
+			<ul class="list-inline">
+				<li><h2>關於</h2></li>
+				<li><h1><small><span class="label label-default">Let's Carpool</span></small></h1></li>
+			</ul>	
+			<h3>Developer</h3>
+			<table class="table table-hover" style="width:60%">
+			  <tbody>
+				<tr>
+				  <td><p class="text-center">Min-Hsuan, Hu</p><p class="text-center">noname19930930@gmail.com</p></td>
+				</tr>
+				<tr>
+				  <td><p class="text-center">Ci-Ruei, Jiang</p><p class="text-center">ha9mv8c@gmail.com</p></td>
+				</tr>
+				<tr>
+				  <td><p class="text-center">Chia-Yu, Huang</p><p class="text-center">happy082807@gmail.com</p></td>
+				</tr>
+				<tr>
+				  <td><p class="text-center">Shih-Hao, Huang</p><p class="text-center">dt9450108@gmail.com</p></td>
+				</tr>
+			  </tbody>
+			</table>
+			
+			<h3>Advisor</h3>
+			<table class="table table-hover" style="width:60%">
+			  <tbody>
+				<tr>
+				  <td><p class="text-center">Prof. Chow-Sing, Lin</p><p class="text-center">mikelin@mail.nutn.edu.tw</p></td>
+				</tr>
+				<tr>
+				  <td><p class="text-center">Yu-Hsuan, Li</p><p class="text-center">imshikar@gmail.com</p></td>
+				</tr>
+			  </tbody>
+			</table>
+			
+			<h4>Copyright©</h4>
+			<dl>
+			  <dt><h6>National University of Tainan<h6></dt>
+			  <dt><h6>Data System Laboratory<h6></dt>
+			  <dd><h6>http://www.dsg.nutn.edu.tw<h6></dd>
+			</dl>
+			
+			<button id="next" type="button" class="btn btn-primary btn-lg btn-block
+			" onclick="nextStep();" style="position:fixed; bottom:0px;">返回</button>
+
+		</center>
+
+		<br></br>
+		
+		<!--load jQuery, required-->
+		<script src="dist/js/jquery-1.9.1.min.js"></script>
+		<!--load jPushMenu, required-->
+		<script src="dist/js/jPushMenu.js"></script>
+		
+		<!--call jPushMenu, required-->
+		<script>
+			jQuery(document).ready(function($) {
+				$('.toggle-menu').jPushMenu();
+			});
+		</script>		
+			
+		<!-- Bootstrap core JavaScript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+		<script src="dist/js/about.js"></script>
+		<script src="dist/js/bootstrap.min.js"></script>
+	</body>
+</html>
