@@ -214,7 +214,7 @@ function Tracking(type, user, driverdata, passengerdata) {
                 else
                     DriverCurPos = GOL_FROMDATABASE;
                 // ======================================================================================================================================LATER CHECK
-                //if (DriverOldCurPos.k != DriverCurPos.k || DriverOldCurPos.D != DriverCurPos.D) {
+                //if (DriverOldCurPos.k != DriverCurPos.k || DriverOldCurPos.lng() != DriverCurPos.lng()) {
                 DriverOldCurPos = DriverCurPos;
                 driver.SetCurrentPos(DriverCurPos);
                 driver.SetCurrentPos(GOL_SELFPOS);
@@ -267,7 +267,7 @@ function Tracking(type, user, driverdata, passengerdata) {
                 PassengerCurPos = GOL_FROMDATABASE;
 
             // ======================================================================================================================================LATER CHECK
-            if (PassengerOldCurPos.k != PassengerCurPos.k || PassengerOldCurPos.D != PassengerCurPos.D) {
+            if (PassengerOldCurPos.lat() != PassengerCurPos.lat() || PassengerOldCurPos.lng() != PassengerCurPos.lng()) {
                 PassengerOldCurPos = PassengerCurPos;
                 passenger1.SetCurrentPos(PassengerCurPos);
                 passenger1.Update(true);
@@ -297,7 +297,7 @@ function Tracking(type, user, driverdata, passengerdata) {
             else
                 DriverCurPos = GOL_FROMDATABASE;
             // ======================================================================================================================================LATER CHECK
-            if (DriverOldCurPos.k != DriverCurPos.k || DriverOldCurPos.D != DriverCurPos.D) {
+            if (DriverOldCurPos.lat() != DriverCurPos.lat() || DriverOldCurPos.lng() != DriverCurPos.lng()) {
                 DriverOldCurPos = DriverCurPos;
                 driver.SetCurrentPos(DriverCurPos);
                 driver.Update(true);
@@ -305,8 +305,8 @@ function Tracking(type, user, driverdata, passengerdata) {
 
             executeAsync(function() {
                 //DISTANCE
-                PassengerToDriver = getDistance(PassengerCurPos.k, PassengerCurPos.D, DriverCurPos.k, DriverCurPos.D);
-                PassengerToGetPoint = getDistance(PassengerCurPos.k, PassengerCurPos.D, PassGetPos.k, PassGetPos.D);
+                PassengerToDriver = getDistance(PassengerCurPos.lat(), PassengerCurPos.lng(), DriverCurPos.lat(), DriverCurPos.lng());
+                PassengerToGetPoint = getDistance(PassengerCurPos.lat(), PassengerCurPos.lng(), PassGetPos.lat(), PassGetPos.lng());
                 //GET IN CAR
                 if (PassengerToGetPoint <= DELTANUMBER && PassengerToDriver <= DELTANUMBER) {
                     passenger1.Getin(driver);
@@ -316,8 +316,8 @@ function Tracking(type, user, driverdata, passengerdata) {
             });
 
             executeAsync(function() {
-                PassengerToDownPoint = getDistance(PassengerCurPos.k, PassengerCurPos.D, PassDownPos.k, PassDownPos.D);
-                DriverToDownPoint = getDistance(DriverCurPos.k, DriverCurPos.D, PassDownPos.k, PassDownPos.D);
+                PassengerToDownPoint = getDistance(PassengerCurPos.lat(), PassengerCurPos.lng(), PassDownPos.lat(), PassDownPos.lng());
+                DriverToDownPoint = getDistance(DriverCurPos.lat(), DriverCurPos.lng(), PassDownPos.lat(), PassDownPos.lng());
                 // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
                 //GET OUT OF CAR
                 if (PassengerToDownPoint <= DELTANUMBER && DriverToDownPoint <= DELTANUMBER)
@@ -327,7 +327,7 @@ function Tracking(type, user, driverdata, passengerdata) {
 
             executeAsync(function() {
                 // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
-                DriverToDEndPoint = getDistance(DriverCurPos.k, DriverCurPos.D, DriverEndPos.k, DriverEndPos.D);
+                DriverToDEndPoint = getDistance(DriverCurPos.lat(), DriverCurPos.lng(), DriverEndPos.lat(), DriverEndPos.lng());
                 if (DriverToDEndPoint <= DELTANUMBER)
                     clearInterval(DriverInterval);
                 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END PROCESS
@@ -373,7 +373,7 @@ function Tracking(type, user, driverdata, passengerdata) {
                 // ======================================================================================================================================LATER CHECK
                 PassengerCurPos[i] = GOL_FROMDATABASE[i];
                 // ======================================================================================================================================LATER CHECK
-                if (PassengerOldCurPos[i].k != PassengerCurPos[i].k || PassengerOldCurPos[i].D != PassengerCurPos[i].D) {
+                if (PassengerOldCurPos[i].lat() != PassengerCurPos[i].lat() || PassengerOldCurPos[i].lng() != PassengerCurPos[i].lng()) {
                     PassengerOldCurPos[i] = PassengerCurPos[i];
                     passengerArray[i].SetCurrentPos(PassengerCurPos[i]);
                     passengerArray[i].Update(true);
@@ -404,7 +404,7 @@ function Tracking(type, user, driverdata, passengerdata) {
             DriverCurPos = GOL_SELFPOS;
             // ======================================================================================================================================LATER CHECK
 
-            if (DriverOldCurPos.k != DriverCurPos.k || DriverOldCurPos.D != DriverCurPos.D) {
+            if (DriverOldCurPos.lat() != DriverCurPos.lat() || DriverOldCurPos.lng() != DriverCurPos.lng()) {
                 DriverOldCurPos = DriverCurPos;
                 driver.SetCurrentPos(DriverCurPos);
                 driver.Update(true);
@@ -416,8 +416,8 @@ function Tracking(type, user, driverdata, passengerdata) {
 
                 executeAsync(function() {
                     //DISTANCE
-                    PassengerToDriver = getDistance(PassengerCurPos[i].k, PassengerCurPos[i].D, DriverCurPos.k, DriverCurPos.D);
-                    PassengerToGetPoint = getDistance(PassengerCurPos[i].k, PassengerCurPos[i].D, PassGetPos.k, PassGetPos.D);
+                    PassengerToDriver = getDistance(PassengerCurPos[i].lat(), PassengerCurPos[i].lng(), DriverCurPos.lat(), DriverCurPos.lng());
+                    PassengerToGetPoint = getDistance(PassengerCurPos[i].lat(), PassengerCurPos[i].lng(), PassGetPos.lat(), PassGetPos.lng());
                     //GET IN CAR
                     if (PassengerToGetPoint <= DELTANUMBER && PassengerToDriver <= DELTANUMBER) {
                         passengerArray[i].Getin(driver);
@@ -427,8 +427,8 @@ function Tracking(type, user, driverdata, passengerdata) {
                 });
 
                 executeAsync(function() {
-                    PassengerToDownPoint = getDistance(PassengerCurPos[i].k, PassengerCurPos[i].D, PassDownPos.k, PassDownPos.D);
-                    DriverToDownPoint = getDistance(DriverCurPos.k, DriverCurPos.D, PassDownPos.k, PassDownPos.D);
+                    PassengerToDownPoint = getDistance(PassengerCurPos[i].lat(), PassengerCurPos[i].lng(), PassDownPos.lat(), PassDownPos.lng());
+                    DriverToDownPoint = getDistance(DriverCurPos.lat(), DriverCurPos.lng(), PassDownPos.lat(), PassDownPos.lng());
                     // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
                     //GET OUT OF CAR
                     if (PassengerToDownPoint <= DELTANUMBER && DriverToDownPoint <= DELTANUMBER)
@@ -438,7 +438,7 @@ function Tracking(type, user, driverdata, passengerdata) {
 
                 executeAsync(function() {
                     // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
-                    DriverToDEndPoint = getDistance(DriverCurPos.k, DriverCurPos.D, DriverEndPos.k, DriverEndPos.D);
+                    DriverToDEndPoint = getDistance(DriverCurPos.lat(), DriverCurPos.lng(), DriverEndPos.lat(), DriverEndPos.lng());
                     if (DriverToDEndPoint <= DELTANUMBER)
                         clearInterval(DriverInterval);
                     // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END PROCESS
@@ -545,7 +545,7 @@ var Passenger = function(_name, _startp, _endp, _getp, _downp, _path) {
                 position: CurrentPos,
                 map: map,
                 icon: "img/path_dot_4.png",
-                title: CurrentPos.k + ", " + CurrentPos.D
+                title: CurrentPos.lat() + ", " + CurrentPos.lng()
             });
 
             CurrInfoWindow = new google.maps.InfoWindow();
@@ -580,7 +580,7 @@ Passenger.prototype = {
             position: thisGetPoint,
             map: map,
             icon: "img/path_dot_0.png",
-            title: thisGetPoint.k + ", " + thisGetPoint.D
+            title: thisGetPoint.lat() + ", " + thisGetPoint.lng()
         }));
 
         //display user down car point
@@ -589,7 +589,7 @@ Passenger.prototype = {
             position: thisDownPoint,
             map: map,
             icon: "img/path_dot_0.png",
-            title: thisDownPoint.k + ", " + thisDownPoint.D
+            title: thisDownPoint.lat() + ", " + thisDownPoint.lng()
         }));
 
         //display user End point
@@ -598,7 +598,7 @@ Passenger.prototype = {
             position: thisEndPoint,
             map: map,
             icon: "img/path_dot_0.png",
-            title: thisEndPoint.k + ", " + thisEndPoint.D
+            title: thisEndPoint.lat() + ", " + thisEndPoint.lng()
         }));
     },
 
@@ -745,7 +745,7 @@ var Driver = function(_name, _path) {
     this.RemoveOrderPoint = function(_pos) {
         for (var i = 0; i < OrderPoint.length; i++)
             if (OrderPoint[i])
-                if ((OrderPoint[i].pos.k == _pos.k) && (OrderPoint[i].pos.D == _pos.D)) {
+                if ((OrderPoint[i].pos.lat() == _pos.lat()) && (OrderPoint[i].pos.lng() == _pos.lng())) {
                     OrderPoint[i] = null;
                     break;
                 }
@@ -847,7 +847,7 @@ var Driver = function(_name, _path) {
             var TargetPoint = null;
             for (var i = 0; i < OrderPoint.length; i++) {
                 if (OrderPoint[i] != null) {
-                    if ((OrderPoint[i].pos.k == des[MinIndex].k) && (OrderPoint[i].pos.k == des[MinIndex].k)) {
+                    if ((OrderPoint[i].pos.lat() == des[MinIndex].lat()) && (OrderPoint[i].pos.lat() == des[MinIndex].lat())) {
                         TargetPoint = OrderPoint[i];
                         break;
                     }
@@ -915,7 +915,7 @@ var Driver = function(_name, _path) {
                 position: CurrentPos,
                 map: map,
                 icon: "img/path_dot_3.png",
-                title: CurrentPos.k + ", " + CurrentPos.D
+                title: CurrentPos.lat() + ", " + CurrentPos.lng()
             });
 
             CurrInfoWindow = new google.maps.InfoWindow();
@@ -953,7 +953,7 @@ Driver.prototype = {
                         position: latlng,
                         map: map,
                         icon: "img/start_pin.png",
-                        title: latlng.k + ", " + latlng.D
+                        title: latlng.lat() + ", " + latlng.lng()
                     });
                     break;
                 case 2:
@@ -961,7 +961,7 @@ Driver.prototype = {
                         position: latlng,
                         map: map,
                         icon: "img/end_pin.png",
-                        title: latlng.k + ", " + latlng.D
+                        title: latlng.lat() + ", " + latlng.lng()
                     });
                     break;
             }
