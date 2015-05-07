@@ -1,6 +1,6 @@
 function PathCompare(p1, p2, directive) {
     function COMP(a, b) {
-        return (a.A == b.A && a.F == b.F) ? true : false;
+        return (a.lat().toFixed(5) == b.lat().toFixed(5) && a.lng().toFixed(5) == b.lng().toFixed(5)) ? true : false;
     };
 
     var OverlapBox = {
@@ -15,19 +15,19 @@ function PathCompare(p1, p2, directive) {
     var fb_lngs = [];
     for (var i = 0; i < p1.length; i++)
         if (!fb_lats[0]) {
-            fb_lats.push([p1[i].A]);
-            fb_lngs.push([p1[i].F]);
+            fb_lats.push([p1[i].lat()]);
+            fb_lngs.push([p1[i].lng()]);
         } else {
-            fb_lats[0].push(p1[i].A);
-            fb_lngs[0].push([p1[i].F]);
+            fb_lats[0].push(p1[i].lat());
+            fb_lngs[0].push([p1[i].lng()]);
         }
     for (var i = 0; i < p2.length; i++)
         if (!fb_lats[1]) {
-            fb_lats.push([p2[i].A]);
-            fb_lngs.push([p2[i].F]);
+            fb_lats.push([p2[i].lat()]);
+            fb_lngs.push([p2[i].lng()]);
         } else {
-            fb_lats[1].push(p2[i].A);
-            fb_lngs[1].push([p2[i].F]);
+            fb_lats[1].push(p2[i].lat());
+            fb_lngs[1].push([p2[i].lng()]);
         }
     var fb_rect = [];
     for (var i = 0; i < 2; i++)
@@ -51,8 +51,8 @@ function PathCompare(p1, p2, directive) {
         for (var i = 0; i < 2; i++) {
             PathsRedots.push([]);
             for (var j = 0; j < p[i].length; j++) {
-                var sd_B_lat = (OverlapBox.low <= p[i][j].A) && (p[i][j].A <= OverlapBox.top);
-                var sd_B_ng = (OverlapBox.left <= p[i][j].F) && (p[i][j].F <= OverlapBox.right);
+                var sd_B_lat = (OverlapBox.low <= p[i][j].lat()) && (p[i][j].lat() <= OverlapBox.top);
+                var sd_B_ng = (OverlapBox.left <= p[i][j].lng()) && (p[i][j].lng() <= OverlapBox.right);
 
                 if (sd_B_lat && sd_B_ng)
                     PathsRedots[i].push(j);
@@ -119,6 +119,6 @@ function PathCompare(p1, p2, directive) {
 function ConvertToGoogleLatLng(list) {
     var temp = [];
     for (var i = 0; i < list.length; i++)
-        temp.push(new google.maps.LatLng(list[i].A, list[i].F));
+        temp.push(new google.maps.LatLng(list[i].at, list[i].ng);
     return temp;
 }
