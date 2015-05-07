@@ -1065,7 +1065,7 @@ function executeAsync(func) {
 function ConvertToGoogleLatLng(list) {
     var temp = [];
     for (var i = 0; i < list.length; i++)
-        temp.push(new google.maps.LatLng(list[i].k, list[i].D));
+        temp.push(new google.maps.LatLng(list[i].at, list[i].ng));
     return temp;
 }
 
