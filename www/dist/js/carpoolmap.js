@@ -51,7 +51,6 @@ var CurrentSelectedMarkerType = null;
 //calculate route
 var PathDirectionRender = null;
 var PathDirectionsService = null;
-var PathDotsMarkers = [];
 var PathDots = [];
 var PathLength = null;
 var pathJSON = null;
@@ -159,7 +158,7 @@ function calRoute() {
 
             PathDirectionRender.setMap(map);
             PathDirectionRender.setDirections(Response);
-            UserPathStored(Response);
+            OutputPathPoints(Response);
         }
     });
 
@@ -170,7 +169,7 @@ function GetUserCurrentPos() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
             if (StartPoint) {
-                if (StartPoint.A != position.coords.latitude || StartPoint.F != position.coords.longitude) {
+                if (StartPoint.lat() != position.coords.latitude || StartPoint.lng() != position.coords.longitude) {
                     if (StartPointMarker != null)
                         StartPointMarker.setMap(null);
 
@@ -229,27 +228,13 @@ function GetUserCurrentPos() {
     }
 }
 
-function UserPathStored(r) {
-    var thisPath = GetPathPoint(r);
-    pathJSON = JSON.stringify(thisPath);
-    PathLength = r.routes[0].legs[0].distance.value;
-    /*
-    =====================================================================================
-                                Store path data in database
-                                format: json
-    =====================================================================================
-     */
-}
-
 function OutputPathPoints(response) {
     var thisPath = GetPathPoint(response);
 
     //record path dots
     PathDots = thisPath;
-
-    for (var i = 0; i < thisPath.length; i++)
-        if (i > 0 && i < thisPath.length - 1)
-            SetPathMarkerDot(i - 1, thisPath[i]);
+    PathLength = response.routes[0].legs[0].distance.value;
+    pathJSON = JSON.stringify(PathDots);
 }
 
 //r is response, p is path number
@@ -258,34 +243,22 @@ function GetPathPoint(r) {
     var steps = r.routes[0].legs[0].steps;
 
     //initail
-    localPath.push(steps[0].path[0]);
+    localPath.push({
+        'at': steps[0].path[0].lat(),
+        'ng': steps[0].path[0].lng()
+    });
 
     for (var i = 0; i < steps.length; i++) {
         var innerStepPath = steps[i].path;
 
         for (var j = 1; j < innerStepPath.length; j++) {
-            localPath.push(innerStepPath[j]);
+            localPath.push({
+                'at': innerStepPath[j].lat(),
+                'ng': innerStepPath[j].lng()
+            });
         }
     }
     return localPath;
-}
-
-function SetPathMarkerDot(index, latLng) {
-    var marker = null;
-
-    PathDotsMarkers[index] = new google.maps.Marker({
-        position: latLng,
-        map: map,
-        icon: "img/path_dot.png",
-        title: latLng.A + ", " + latLng.F
-    });
-    marker = PathDotsMarkers[index];
-
-    google.maps.event.addListener(marker, 'click', function() {
-        new google.maps.InfoWindow({
-            content: '<div>' + latLng.A + ', ' + latLng.F + '</div>'
-        }).open(map, marker);
-    });
 }
 
 function ResetAllParameter() {
@@ -295,11 +268,6 @@ function ResetAllParameter() {
 
     if (PathDirectionRender != null)
         PathDirectionRender.setMap(null);
-
-    for (var i = 0; i < PathDotsMarkers.length; i++)
-        if (PathDotsMarkers[i] != null)
-            PathDotsMarkers[i].setMap(null);
-    PathDotsMarkers = [];
 
     PathDots = [];
 }
@@ -357,16 +325,6 @@ function SetMarkerStatus(type) {
 //
 //
 //functions for work==============================================================
-function isInt(value) {
-    return !isNaN(value) && (function(x) {
-        return (x | 0) === x;
-    })(parseFloat(value))
-}
-
-function isNum(obj) {
-    return !(typeof(obj) == 'undefined' || obj == null || obj == "") && !isNaN(obj);
-}
-
 function resizeScreen() {
     //set map block height and width
     var docHight = $(document).height();
@@ -382,20 +340,4 @@ function randFloat(minVal, maxVal, floatVal) {
 
 function randInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
-function genMyTimeStr() {
-    var d = new Date();
-    return d.getFullYear() + '_' + (d.getMonth() + 1) + '_' + d.getDate() + '_' + d.getHours() + '_' + d.getMinutes() + '_' + d.getSeconds();
-}
-
-function debugUsing(data) {
-    var outputStr = "";
-    for (var i = 0; i < data.length; i++) {
-        outputStr += data[i].join(',') + '<br>';
-    }
-    $('body').append(outputStr);
-
-    var w = window.open();
-    $(w.document.body).html(outputStr);
 }
