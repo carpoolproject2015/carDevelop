@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    resizeScreen();
     initialize();
 
     document.addEventListener("deviceready", onDeviceReady, false);
@@ -1116,6 +1117,14 @@ function updateLocation(id, latitude, longitude) {
         }
     }
     xmlhttp.send();
+}
+
+function resizeScreen() {
+    //set map block height and width
+    var docHight = $(document).height();
+    var mapblockH = docHight - 70;
+
+    $('#map-block').css('height', mapblockH + 'px');
 }
 
 // PhoneGap is loaded and it is now safe to make calls PhoneGap methods
