@@ -283,8 +283,19 @@ function nextStep1() { //比對路徑
         oidd = PathCompare(p1, p2, true);
         console.log("oidd:" + oidd);
 
+
         if (oidd != null) {
-            finalres.push(oidd[0]); //儲存共乘路徑
+            var oidToDB = [];
+            for (var i = 0; i < oidd.length; i++) {
+                oidToDB.push([]);
+                for (var j = 0; j < oidd[i].length; j++) {
+                    oidToDB[i].push({
+                        'at': oidd[i][j].lat(),
+                        'ng': oidd[i][j].lng()
+                    });
+                }
+            }
+            finalres.push(oidToDB[0]); //儲存共乘路徑
 
             ori_2 = [];
             des_2 = [];
