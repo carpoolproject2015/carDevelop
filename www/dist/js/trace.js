@@ -52,15 +52,15 @@ function initialize() {
             console.log(temp);
             ReceiverDataTake(temp);
         } else {
-            var str = '{"array":[{"id":"' + id + '"}]' + '}';
+            var str = '{"array":[{"id":"' + id + '"}]}';
             console.log(str);
             ReceiverDataTake(str);
         }
     } else if (role == "passenger") {
         did = json.did;
-        var strPassenger = '{"array":[{"id":"' + id + '"}]' + '}';
-        var strDriver = '{"array":[{"id":"' + did + '"}]' + '}';
-        ReceiverDataTake(strDriver);
+        var strPassenger = '{"array":[{"id":"' + id + '"}]}';
+        var strDriver = '{"array":[{"id":"' + did + '"}]}';
+        // ReceiverDataTake(strDriver);
         TracekerDataTake(strPassenger);
     }
 
@@ -1047,8 +1047,6 @@ Driver.prototype = {
             avoidHighways: true,
             avoidTolls: true
         }, function(response, status) {
-            console.log(status);
-            console.log(response);
             callback(response, status, des, true);
         });
     },

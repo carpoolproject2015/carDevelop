@@ -16,7 +16,7 @@
 	while($index < sizeof($array))
 	{
 		$id = $array[$index]['id'];
-		$sql = "SELECT `account`.`name`,`receiver`.`path` FROM `receiver`,`account` WHERE `account`.`aid` = '$id'";
+		$sql = "SELECT `account`.`name`,`receiver`.`path` FROM `receiver`,`account` WHERE `account`.`aid` = '$id' and `receiver`.`aid` = '$id'";
 		$result = mysql_query($sql);
 
 		$i = mysql_fetch_array($result);
