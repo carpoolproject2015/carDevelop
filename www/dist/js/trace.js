@@ -28,34 +28,20 @@ function initialize() {
     var str = url.substring(url.indexOf("{"), url.length);
 
     json = JSON.parse(decodeURIComponent(str));
-    console.log(json);
     id = json.id;
     role = json.role;
     // pid =
+    // driver: {"role":"driver","id":"678671252207481", "pid": ["pid": "1046779538684826"]}
+    // return name, path
+    // passenger: {"role":"passenger","id":"1046779538684826","did":"678671252207481"}
+    // return name, start, end, carpoolpath
+
 
 
     if (role == "driver") {
-        if (trace) {
-            console.log("ABC");
-            var arrayObj = {
-                'array': null
-            };
-            var tmpList = [];
-            for (var i = 0; i < trace.length; i++) {
-                tmpList.push({
-                    'id': trace[i].pid
-                });
-            }
-            arrayObj.array = tmpList;
-            var temp = JSON.stringify(arrayObj);
-            LocationDataTake(temp);
-            console.log(temp);
-            ReceiverDataTake(temp);
-        } else {
-            var str = '{"array":[{"id":"' + id + '"}]}';
-            console.log(str);
-            ReceiverDataTake(str);
-        }
+        var str = '{"array":[{"id":"' + id + '"}]}';
+        console.log(str);
+        ReceiverDataTake(str);
     } else if (role == "passenger") {
         did = json.did;
         var strPassenger = '{"array":[{"id":"' + id + '"}]}';
