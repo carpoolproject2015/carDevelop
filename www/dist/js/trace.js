@@ -1114,6 +1114,7 @@ function updateLocation(id, latitude, longitude) {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             var pos = JSON.parse(xmlhttp.responseText);
             GOL_SELFPOS = new google.maps.LatLng(pos.latitude, pos.longitude);
+            map.setCenter(GOL_SELFPOS);
         }
     }
     xmlhttp.send();
