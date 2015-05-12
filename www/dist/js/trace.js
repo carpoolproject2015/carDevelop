@@ -16,6 +16,8 @@ var json = "";
 var role = "";
 var trace = "";
 var tid = "";
+var pid = null;
+var did = null;
 var server = "http://noname0930.no-ip.org/carpool/api/";
 var local = "file:///android_asset/www/";
 
@@ -26,10 +28,11 @@ function initialize() {
     var str = url.substring(url.indexOf("{"), url.length);
 
     json = JSON.parse(decodeURIComponent(str));
-
+    console.log(json);
     id = json.id;
     role = json.role;
-    trace = json.trace;
+    // pid =
+
 
     if (role == "driver") {
         if (trace) {
@@ -45,16 +48,20 @@ function initialize() {
             }
             arrayObj.array = tmpList;
             var temp = JSON.stringify(arrayObj);
-            TrackDataTake(temp);
+            LocationDataTake(temp);
             console.log(temp);
-            DriverDataTake(temp);
+            ReceiverDataTake(temp);
         } else {
             var str = '{"array":[{"id":"' + id + '"}]' + '}';
             console.log(str);
-            DriverDataTake(str);
+            ReceiverDataTake(str);
         }
     } else if (role == "passenger") {
-        did = trace[0].did;
+        did = json.did;
+        var strPassenger = '{"array":[{"id":"' + id + '"}]' + '}';
+        var strDriver = '{"array":[{"id":"' + did + '"}]' + '}';
+        ReceiverDataTake(strDriver);
+        TracekerDataTake(strPassenger);
     }
 
     DetectLocation(id, 10, true);
@@ -97,7 +104,8 @@ function cancelCarpool() {
     window.location = local + 'initialize.html?data={"id":"' + id + '"}';
 }
 
-function TrackDataTake(data) {
+//get another current position
+function LocationDataTake(data) {
     var temp = '{"role":"driver",' + data.substring(1, data.length);
     var url = server + 'get_location.php?data=' + temp;
     console.log("URL " + url);
@@ -118,7 +126,8 @@ function TrackDataTake(data) {
     xmlhttp.send();
 }
 
-function DriverDataTake(data) {
+//get driver data name and path
+function ReceiverDataTake(data) {
     var url = server + 'get_receiver.php?data=' + data;
     console.log("URL " + url);
     var xmlhttp = new XMLHttpRequest();
@@ -127,14 +136,15 @@ function DriverDataTake(data) {
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
             var Driver = JSON.parse(xmlhttp.responseText);
-            //PathAndLocationDataTake(data);
+            //TracekerDataTake(data);
             TrackingInput(Driver, 1);
         }
     }
     xmlhttp.send();
 }
 
-function PathAndLocationDataTake(data) {
+//get passenger data name start and end and carpool
+function TracekerDataTake(data) {
     var url = server + 'get_tracker.php?data=' + data;
     console.log("URL " + url);
     var xmlhttp = new XMLHttpRequest();
