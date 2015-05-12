@@ -57,7 +57,7 @@ function initialize() {
         did = trace[0].did;
     }
 
-    DetectLocation(id, 5, true);
+    DetectLocation(id, 10, true);
 
     json = decodeURIComponent(str);
 }
