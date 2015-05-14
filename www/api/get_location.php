@@ -22,7 +22,6 @@
 			$id = $array[$index]['id'];
 			$sql = "SELECT `curpoint` FROM `requester` WHERE `aid` = '$id'";
 			$result = mysql_query($sql);
-
 			$i = mysql_fetch_array($result);
 
 			$str .= $i['curpoint'];
@@ -32,17 +31,25 @@
 
 			$index++;
 		}
+		$str .= ']';
+		echo $str;
 	}
 	else if($role == "passenger")
 	{
-		$id = $array[0]['id'];
-		$sql = "SELECT `curpoint` FROM `receiver` WHERE `aid` = '$id'";
-		$result = mysql_query($sql);
+		$arr = array();
 
-		$i = mysql_fetch_array($result);
+		$index = 0;
+		while($index < sizeof($array))
+		{
+			$id = $array[$index]['id'];
+			$sql = "SELECT `curpoint` FROM `receiver` WHERE `aid` = '$id'";
+			$result = mysql_query($sql);
 
-		$str .= $i['curpoint'];
+			$i = mysql_fetch_array($result);
+
+			$index++;
+			array_push($arr,$i[0]);
+		}
+		echo json_encode($arr);
 	}
-	$str .= ']';
-	echo $str;
 ?>
