@@ -36,8 +36,6 @@
 	}
 	else if($role == "passenger")
 	{
-		$arr = array();
-
 		$index = 0;
 		while($index < sizeof($array))
 		{
@@ -47,9 +45,14 @@
 
 			$i = mysql_fetch_array($result);
 
+			$str .= $i['curpoint'];
+
+			if($index != sizeof($array) - 1)
+				$str .= ',';
+
 			$index++;
-			array_push($arr,$i[0]);
 		}
-		echo json_encode($arr);
+		$str .= ']';
+		echo $str;
 	}
 ?>
