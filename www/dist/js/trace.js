@@ -22,7 +22,13 @@ var server = "http://noname0930.no-ip.org/carpool/api/";
 var local = "file:///android_asset/www/";
 
 function initialize() {
-    console.log("ABC");
+    //set map options
+    var mapOptions = {
+        zoom: 15,
+        center: new google.maps.LatLng(23.00106, 120.20875)
+    };
+    //set map
+    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
     var url = window.location.toString();
     var str = url.substring(url.indexOf("{"), url.length);
@@ -30,27 +36,54 @@ function initialize() {
     json = JSON.parse(decodeURIComponent(str));
     id = json.id;
     role = json.role;
-    // pid =
+
+    executeAsync(function(id) {
+        DetectLocation(id, 20, true);
+    });
+
     // driver: {"role":"driver","id":"678671252207481", "pid": ["pid": "1046779538684826"]}
     // return name, path
     // passenger: {"role":"passenger","id":"1046779538684826","did":"678671252207481"}
     // return name, start, end, carpoolpath
 
-
+    var strPassenger = null;
+    var strDriver = null;
+    var strLocation = null;
+    var type = null;
 
     if (role == "driver") {
-        var str = '{"array":[{"id":"' + id + '"}]}';
-        console.log(str);
-        ReceiverDataTake(str);
+        strDriver = '{"array":[{"id":"' + id + '"}]}';
+        if (json.hasOwnProperty('pid')) {
+            var tmppids = json.pid;
+            strPassenger = '{"array":[';
+            strLocation = '{"role":"passenger","array":[';
+            for (var i = 0; i < tmppids.length; i++) {
+                if (i == tmppids.length - 1) {
+                    strPassenger += '{"id":"' + tmppids[i] + '"}';
+                    strLocation += '{"id":"' + tmppids[i] + '"}';
+                } else {
+                    strPassenger += '{"id":"' + tmppids[i] + '"},';
+                    strLocation += '{"id":"' + tmppids[i] + '"},';
+                }
+            }
+            strPassenger += ']}';
+            strLocation += ']}';
+        }
+        type = 1;
     } else if (role == "passenger") {
         did = json.did;
-        var strPassenger = '{"array":[{"id":"' + id + '"}]}';
-        var strDriver = '{"array":[{"id":"' + did + '"}]}';
-        // ReceiverDataTake(strDriver);
-        TracekerDataTake(strPassenger);
+        strLocation = '{"role":"driver","array":[{"id":"' + did + '"}]}';
+        strDriver = '{"array":[{"id":"' + did + '"}]}';
+        strPassenger = '{"array":[{"id":"' + id + '"}]}';
+        type = 2;
     }
 
-    DetectLocation(id, 10, true);
+    // get others' location from database with "second"
+    executeAsync(function() {
+        GetOthersLocation(strLocation, 20, true);
+    });
+
+    ReceiverDataTake(strDriver, strPassenger, type);
 
     json = decodeURIComponent(str);
 }
@@ -92,357 +125,115 @@ function cancelCarpool() {
 
 //get another current position
 function LocationDataTake(data) {
-    var temp = '{"role":"driver",' + data.substring(1, data.length);
-    var url = server + 'get_location.php?data=' + temp;
-    console.log("URL " + url);
+    var url = server + 'get_location.php?data=' + data;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", url, true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var data = JSON.parse(xmlhttp.responseText);
-            console.log(data);
+            var JsonPositions = JSON.parse(xmlhttp.responseText);
             GOL_FROMDATABASE = [];
-            for (var i = 0; i < data.length; i++)
-                GOL_FROMDATABASE.push(new google.maps.LatLng(data[i].latitude, data[i].longitude));
-            console.log(GOL_FROMDATABASE);
-
+            for (var i = 0; i < JsonPositions.length; i++)
+                GOL_FROMDATABASE.push(new google.maps.LatLng(JsonPositions[i].latitude, JsonPositions[i].longitude));
         }
     }
     xmlhttp.send();
 }
 
 //get driver data name and path
-function ReceiverDataTake(data) {
-    var url = server + 'get_receiver.php?data=' + data;
-    console.log("URL " + url);
+function ReceiverDataTake(DriverDataBase, PassengerDataBase, type) {
+    var url = server + 'get_receiver.php?data=' + DriverDataBase;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", url, true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var Driver = JSON.parse(xmlhttp.responseText);
-            //TracekerDataTake(data);
-            TrackingInput(Driver, 1);
+            var DriverJson = JSON.parse(xmlhttp.responseText);
+            if (PassengerDataBase) {
+                TracekerDataTake(DriverJson, PassengerDataBase, type);
+            } else {
+                TrackingInput(DriverJson, null, type);
+            }
         }
     }
     xmlhttp.send();
 }
 
 //get passenger data name start and end and carpool
-function TracekerDataTake(data) {
-    var url = server + 'get_tracker.php?data=' + data;
-    console.log("URL " + url);
+function TracekerDataTake(DriverJson, PassengerDataBase, type) {
+    var url = server + 'get_tracker.php?data=' + PassengerDataBase;
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", url, true);
     xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-            var Passenger = JSON.parse(xmlhttp.responseText);
-            TrackingInput(Passenger, 2);
+            var PassengerJson = JSON.parse(xmlhttp.responseText);
+            TrackingInput(DriverJson, PassengerJson, type);
         }
     }
     xmlhttp.send();
 }
 
-function TrackingInput(data, type) {
-    console.log(data);
-    console.log(type);
-    var user = (role == "driver") ? 1 : 2;
-    //driver
-    if (type == 1) {
-        //Tracking(type, user, driverdata, passengerdata) {
-        var tmpDriver = {
-            'name': data[0].name,
-            'path': ConvertToGoogleLatLng(data[0].path)
-        };
+function TrackingInput(JsonDriver, JsonPassenger, user) {
+    var ObjectDriver = null;
+    var ObjectPassenger = null;
 
-        Tracking(0, user, tmpDriver, null);
-    } else if (type == 2) {
-        var tmpPassList = [];
-        for (var i = 0; i < data.length; i++)
+    //driver
+    ObjectDriver = {
+        'name': JsonDriver[0].name,
+        'path': ConvertToGoogleLatLng(JsonDriver[0].path)
+    };
+
+    var tmpPassList = [];
+    if (JsonPassenger) {
+        for (var i = 0; i < JsonPassenger.length; i++)
             tmpPassList.push({
-                'name': data[i].name,
-                'startpoint': new google.maps.LatLng(data[i].start.latitude, data[i].start.longitude),
-                'endpoint': new google.maps.LatLng(data[i].end.latitude, data[i].end.longitude),
-                'carpoolpath': ConvertToGoogleLatLng(data[i].carpoolpath[0])
+                'name': JsonPassenger[i].name,
+                'startpoint': new google.maps.LatLng(JsonPassenger[i].start.latitude, JsonPassenger[i].start.longitude),
+                'endpoint': new google.maps.LatLng(JsonPassenger[i].end.latitude, JsonPassenger[i].end.longitude),
+                'carpoolpath': ConvertToGoogleLatLng(JsonPassenger[i].carpoolpath[0])
             });
-        if (tmpPassList.length == 0)
-            tmpPassList = null;
-        Tracking(data.length, user, null, tmpPassList);
+        ObjectPassenger = tmpPassList;
     }
+
+    Tracking(ObjectDriver, ObjectPassenger, user);
 }
 
 var GOL_SELFPOS = null;
 var GOL_FROMDATABASE = null;
+var DRIVERINTERVALID = null;
+var PASSENGERINTERVALID = null;
 
-function Tracking(type, user, driverdata, passengerdata) {
-    //set map options
-    var mapOptions = {
-        zoom: 15,
-        center: new google.maps.LatLng(23.00106, 120.20875)
-    };
-    // ================================================================  above notice
-
-    //set map
-    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-    console.log(driverdata);
-    //User Type =1 is passenger look
+function Tracking(DriverData, PassengerData, user) {
+    console.log("==========***********   user is : " + user);
     //driver
     var driver;
-    if (driverdata) {
-        driver = new Driver(driverdata.name, driverdata.path);
-        driver.Initialize();
+    driver = new Driver(DriverData.name, DriverData.path);
+    driver.Initialize();
+
+    //passengers
+    var passenger = [];
+    if (PassengerData) {
+        for (var i = 0; i < PassengerData.length; i++) {
+            passenger.push(new Passenger(
+                PassengerData[i].name,
+                PassengerData[i].startpoint,
+                PassengerData[i].endpoint,
+                PassengerData[i].carpoolpath[0],
+                PassengerData[i].carpoolpath[PassengerData[i].carpoolpath.length - 1],
+                PassengerData[i].carpoolpath
+            ));
+            passenger[i].Initialize();
+            driver.AddPassenger(passenger[i]);
+        }
     }
 
-    if (type == 0) {
-        var DriverInterval;
+    var DriverCurPos;
+    var DriverOldCurPos;
 
-        DriverInterval = setInterval(function() {
-            var DriverCurPos;
-            var DriverOldCurPos;
-            if (GOL_SELFPOS) {
-                DriverCurPos = GOL_SELFPOS;
-                DriverOldCurPos = DriverCurPos;
-                console.log(DriverCurPos);
-                // ======================================================================================================================================LATER CHECK
-                if (user == 2)
-                    DriverCurPos = GOL_SELFPOS;
-                else
-                    DriverCurPos = GOL_FROMDATABASE;
-                // ======================================================================================================================================LATER CHECK
-                //if (DriverOldCurPos.k != DriverCurPos.k || DriverOldCurPos.lng() != DriverCurPos.lng()) {
-                DriverOldCurPos = DriverCurPos;
-                driver.SetCurrentPos(DriverCurPos);
-                driver.SetCurrentPos(GOL_SELFPOS);
-                driver.Update(true);
-                //}
-            }
-        }, 15000);
-    } else if (type == 1) {
-        var PassengerCurPos = null;
-        var DriverCurPos = null;
 
-        var PassengerOldCurPos = null;
-        var DriverOldCurPos = null;
 
-        var PassInterval;
-        var DriverInterval;
 
-        //passenger1
-        var passenger1 = new Passenger(
-            passengerdata[0].name,
-            passengerdata[0].startpoint,
-            passengerdata[0].endpoint,
-            passengerdata[0].carpoolpath[0],
-            passengerdata[0].carpoolpath[passengerdata[0].carpoolpath.length - 1],
-            passengerdata[0].carpoolpath);
-        passenger1.Initialize();
-        driver.AddPassenger(passenger1);
-
-        // ======================================================================================================================================LATER CHECK
-        if (user == 1) { //1 is passenger
-            PassengerCurPos = GOL_SELFPOS;
-            DriverCurPos = GOL_FROMDATABASE;
-        } else if (user == 2) {
-            PassengerCurPos = GOL_FROMDATABASE;
-            DriverCurPos = GOL_SELFPOS;
-        }
-        // ======================================================================================================================================LATER CHECK
-
-        PassengerOldCurPos = PassengerCurPos;
-        DriverOldCurPos = DriverCurPos;
-
-        passenger1.SetCurrentPos(PassengerCurPos);
-        passenger1.Update(true);
-
-        PassInterval = setInterval(function() {
-            // ======================================================================================================================================LATER CHECK
-            if (user == 1)
-                PassengerCurPos = GOL_SELFPOS;
-            else
-                PassengerCurPos = GOL_FROMDATABASE;
-
-            // ======================================================================================================================================LATER CHECK
-            if (PassengerOldCurPos.lat() != PassengerCurPos.lat() || PassengerOldCurPos.lng() != PassengerCurPos.lng()) {
-                PassengerOldCurPos = PassengerCurPos;
-                passenger1.SetCurrentPos(PassengerCurPos);
-                passenger1.Update(true);
-            }
-        }, 60000);
-
-        var PassGetPos = passenger1.GetGetPoint();
-        var PassDownPos = passenger1.GetDownPoint();
-        // ======================================================================================================================================LATER CHECK
-        var DriverEndPos = driverdata.path[driverdata.path.length - 1];
-        // ======================================================================================================================================LATER CHECK
-
-        //distance
-        var PassengerToGetPoint;
-        var PassengerToDriver;
-        var PassengerToDownPoint;
-        var DriverToDownPoint;
-        var DriverToDEndPoint;
-
-        driver.SetCurrentPos(DriverCurPos);
-        driver.Update(true);
-
-        DriverInterval = setInterval(function() {
-            // ======================================================================================================================================LATER CHECK
-            if (user == 2)
-                DriverCurPos = GOL_SELFPOS;
-            else
-                DriverCurPos = GOL_FROMDATABASE;
-            // ======================================================================================================================================LATER CHECK
-            if (DriverOldCurPos.lat() != DriverCurPos.lat() || DriverOldCurPos.lng() != DriverCurPos.lng()) {
-                DriverOldCurPos = DriverCurPos;
-                driver.SetCurrentPos(DriverCurPos);
-                driver.Update(true);
-            }
-
-            executeAsync(function() {
-                //DISTANCE
-                PassengerToDriver = getDistance(PassengerCurPos.lat(), PassengerCurPos.lng(), DriverCurPos.lat(), DriverCurPos.lng());
-                PassengerToGetPoint = getDistance(PassengerCurPos.lat(), PassengerCurPos.lng(), PassGetPos.lat(), PassGetPos.lng());
-                //GET IN CAR
-                if (PassengerToGetPoint <= DELTANUMBER && PassengerToDriver <= DELTANUMBER) {
-                    passenger1.Getin(driver);
-                    passenger1.Update(false);
-                    clearInterval(PassInterval);
-                }
-            });
-
-            executeAsync(function() {
-                PassengerToDownPoint = getDistance(PassengerCurPos.lat(), PassengerCurPos.lng(), PassDownPos.lat(), PassDownPos.lng());
-                DriverToDownPoint = getDistance(DriverCurPos.lat(), DriverCurPos.lng(), PassDownPos.lat(), PassDownPos.lng());
-                // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
-                //GET OUT OF CAR
-                if (PassengerToDownPoint <= DELTANUMBER && DriverToDownPoint <= DELTANUMBER)
-                    passenger1.Getoutof(driver);
-                // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END PROCESS
-            });
-
-            executeAsync(function() {
-                // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
-                DriverToDEndPoint = getDistance(DriverCurPos.lat(), DriverCurPos.lng(), DriverEndPos.lat(), DriverEndPos.lng());
-                if (DriverToDEndPoint <= DELTANUMBER)
-                    clearInterval(DriverInterval);
-                // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END PROCESS
-            });
-        }, 60000);
-    } else if (type == 2) { //must driver
-        var passengerArray = [];
-        var passengerInterval = [];
-
-        var PassengerCurPos = [];
-        var DriverCurPos = null;
-
-        var PassengerOldCurPos = [];
-        var DriverOldCurPos = null;
-
-        for (var i = 0; i < passengerdata.length; i++) {
-            passengerArray.push(new Passenger(
-                passengerdata[i].name,
-                passengerdata[i].startpoint,
-                passengerdata[i].endpoint,
-                passengerdata[i].carpoolpath[0],
-                passengerdata[i].carpoolpath[passengerdata[i].carpoolpath.length - 1],
-                passengerdata[i].carpoolpath));
-            passengerArray[i].Initialize();
-            driver.AddPassenger(passengerArray[i]);
-        }
-
-        // ======================================================================================================================================LATER CHECK
-        for (var i = 0; i < GOL_FROMDATABASE.length; i++) {
-            PassengerCurPos.push(GOL_FROMDATABASE[i]);
-            PassengerOldCurPos.push(GOL_FROMDATABASE[i]);
-        }
-
-        DriverCurPos = GOL_SELFPOS;
-        DriverOldCurPos = DriverCurPos;
-        // ======================================================================================================================================LATER CHECK
-
-        for (var i = 0; i < passengerArray.length; i++) {
-            passengerArray[i].SetCurrentPos(PassengerCurPos[i]);
-            passengerArray[i].Update(true);
-
-            var tmpIntervalID = setInterval(function() {
-                // ======================================================================================================================================LATER CHECK
-                PassengerCurPos[i] = GOL_FROMDATABASE[i];
-                // ======================================================================================================================================LATER CHECK
-                if (PassengerOldCurPos[i].lat() != PassengerCurPos[i].lat() || PassengerOldCurPos[i].lng() != PassengerCurPos[i].lng()) {
-                    PassengerOldCurPos[i] = PassengerCurPos[i];
-                    passengerArray[i].SetCurrentPos(PassengerCurPos[i]);
-                    passengerArray[i].Update(true);
-                }
-            }, 60000);
-
-            passengerInterval.push(tmpIntervalID);
-        }
-
-        driver.SetCurrentPos(DriverCurPos);
-        driver.Update(true);
-
-        // ======================================================================================================================================LATER CHECK
-        var DriverEndPos = driverdata.path[driverdata.path.length - 1];
-        // ======================================================================================================================================LATER CHECK
-
-        //distance
-        var PassengerToGetPoint;
-        var PassengerToDriver;
-        var PassengerToDownPoint;
-        var DriverToDownPoint;
-        var DriverToDEndPoint;
-        var PassGetPos;
-        var PassDownPos;
-
-        DriverInterval = setInterval(function() {
-            // ======================================================================================================================================LATER CHECK
-            DriverCurPos = GOL_SELFPOS;
-            // ======================================================================================================================================LATER CHECK
-
-            if (DriverOldCurPos.lat() != DriverCurPos.lat() || DriverOldCurPos.lng() != DriverCurPos.lng()) {
-                DriverOldCurPos = DriverCurPos;
-                driver.SetCurrentPos(DriverCurPos);
-                driver.Update(true);
-            }
-
-            for (var i = 0; i < passengerArray.length; i++) {
-                PassGetPos = passengerArray[i].GetGetPoint();
-                PassDownPos = passengerArray[i].GetDownPoint();
-
-                executeAsync(function() {
-                    //DISTANCE
-                    PassengerToDriver = getDistance(PassengerCurPos[i].lat(), PassengerCurPos[i].lng(), DriverCurPos.lat(), DriverCurPos.lng());
-                    PassengerToGetPoint = getDistance(PassengerCurPos[i].lat(), PassengerCurPos[i].lng(), PassGetPos.lat(), PassGetPos.lng());
-                    //GET IN CAR
-                    if (PassengerToGetPoint <= DELTANUMBER && PassengerToDriver <= DELTANUMBER) {
-                        passengerArray[i].Getin(driver);
-                        passengerArray[i].Update(false);
-                        clearInterval(PassInterval);
-                    }
-                });
-
-                executeAsync(function() {
-                    PassengerToDownPoint = getDistance(PassengerCurPos[i].lat(), PassengerCurPos[i].lng(), PassDownPos.lat(), PassDownPos.lng());
-                    DriverToDownPoint = getDistance(DriverCurPos.lat(), DriverCurPos.lng(), PassDownPos.lat(), PassDownPos.lng());
-                    // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
-                    //GET OUT OF CAR
-                    if (PassengerToDownPoint <= DELTANUMBER && DriverToDownPoint <= DELTANUMBER)
-                        passengerArray[i].Getoutof(driver);
-                    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END PROCESS
-                });
-
-                executeAsync(function() {
-                    // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
-                    DriverToDEndPoint = getDistance(DriverCurPos.lat(), DriverCurPos.lng(), DriverEndPos.lat(), DriverEndPos.lng());
-                    if (DriverToDEndPoint <= DELTANUMBER)
-                        clearInterval(DriverInterval);
-                    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END PROCESS
-                });
-            }
-        }, 60000);
-    }
 }
 
 /*
@@ -560,11 +351,12 @@ Passenger.prototype = {
     //initial
     'Initialize': function() {
         //display carpool path in google polyline
+        var randColor = "#" + (randInt(50, 200)).toString(16) + (randInt(50, 200)).toString(16) + (randInt(50, 200)).toString(16);
         var thisPath = this.GetPath();
         this.SetPathPolyline(new google.maps.Polyline({
             path: thisPath,
             geodesic: true,
-            strokeColor: '#FF0',
+            strokeColor: randColor,
             strokeOpacity: 1.0,
             strokeWeight: 8,
             zIndex: 999
@@ -762,10 +554,8 @@ var Driver = function(_name, _path) {
         return CurrentPos;
     };
     this.SetPassList = function(s_PassList) {
-        if (PassList.length < PassNum) {
-            s_PassList.SetID(PassList.length);
-            PassList.push(s_PassList);
-        }
+        s_PassList.SetID(PassList.length);
+        PassList.push(s_PassList);
     };
     this.GetPassList = function() {
         return PassList;
@@ -1098,6 +888,15 @@ function DetectLocation(id, second, seton) {
     }
 }
 
+function GetOthersLocation(data, second, seton) {
+    var thisid = null;
+    if (seton) {
+        thisid = setInterval(LocationDataTake, second * 1000);
+    } else {
+        clearInterval(thisid);
+    }
+}
+
 function updateLocation(id, latitude, longitude) {
     var data = '{"id":"' + id + '","curpoint":[{"latitude":"' + latitude + '","longitude":"' + longitude + '"}]}';
     var url = server + 'update_location.php?data=' + data;
@@ -1120,6 +919,10 @@ function resizeScreen() {
     var mapblockH = docHight - 70;
 
     $('#map-block').css('height', mapblockH + 'px');
+}
+
+function randInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 // PhoneGap is loaded and it is now safe to make calls PhoneGap methods
