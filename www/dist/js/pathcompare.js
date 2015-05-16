@@ -1,8 +1,4 @@
 function PathCompare(p1, p2, directive) {
-    function COMP(a, b) {
-        return (a.lat().toFixed(5) == b.lat().toFixed(5) && a.lng().toFixed(5) == b.lng().toFixed(5)) ? true : false;
-    };
-
     var OverlapBox = {
         'top': null,
         'low': null,
@@ -66,7 +62,7 @@ function PathCompare(p1, p2, directive) {
         var directArr = [];
         for (var z = 0; z < PathsRedots[0].length; z++) { //path 1 :passenger
             for (var x = 0; x < PathsRedots[1].length; x++) {
-                if (COMP(p[0][PathsRedots[0][z]], p[1][PathsRedots[1][x]])) {
+                if ((p[0][PathsRedots[0][z]].lat().toFixed(5) == p[1][PathsRedots[1][x]].lat().toFixed(5) && p[0][PathsRedots[0][z]].lng().toFixed(5) == p[1][PathsRedots[1][x]].lng().toFixed(5))) {
                     if (!cr_arr[0]) {
                         cr_arr.push([z]);
                         directArr.push([x]);
@@ -88,6 +84,7 @@ function PathCompare(p1, p2, directive) {
 
         //output intersection
         var oid = [];
+        var findPath = 0;
         for (var i = 0; i < cr_arr.length; i++) {
             if (cr_arr[i].length > 1) {
                 var path1direct = (cr_arr[i][1] - cr_arr[i][0]) > 0;
@@ -97,17 +94,20 @@ function PathCompare(p1, p2, directive) {
                     if (path1direct ? path2direct : !path2direct) {
                         oid.push([]);
                         for (var j = 0; j < cr_arr[i].length; j++) {
-                            oid[i].push(p[0][PathsRedots[0][cr_arr[i][j]]]); //push passenger dots
+                            oid[findPath].push(p[0][PathsRedots[0][cr_arr[i][j]]]); //push passenger dots
                         }
+                        findPath++;
                     }
                 } else {
                     oid.push([]);
                     for (var j = 0; j < cr_arr[i].length; j++) {
-                        oid[i].push(p[0][PathsRedots[0][cr_arr[i][j]]]); //push passenger dots
+                        oid[findPath].push(p[0][PathsRedots[0][cr_arr[i][j]]]); //push passenger dots
                     }
+                    findPath++;
                 }
             }
         }
+
         if (oid.length == 0)
             return null;
         return oid;
@@ -119,6 +119,6 @@ function PathCompare(p1, p2, directive) {
 function ConvertToGoogleLatLng(list) {
     var temp = [];
     for (var i = 0; i < list.length; i++)
-        temp.push(new google.maps.LatLng(list[i].at, list[i].ng));
+        temp.push(new google.maps.LatLng(list[i].lat(), list[i].lng()));
     return temp;
 }
