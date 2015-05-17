@@ -119,6 +119,6 @@ function PathCompare(p1, p2, directive) {
 function ConvertToGoogleLatLng(list) {
     var temp = [];
     for (var i = 0; i < list.length; i++)
-        temp.push(new google.maps.LatLng(list[i].lat(), list[i].lng()));
+        temp.push(new google.maps.LatLng(list[i].at, list[i].ng));
     return temp;
 }
