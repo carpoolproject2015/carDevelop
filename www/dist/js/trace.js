@@ -7,9 +7,7 @@ $(document).ready(function() {
 
 //global variables
 var map;
-var DELTANUMBER = 5; //ERROR NUMBER IN 2 METER
-
-//http://noname0930.no-ip.org/carpool/trace.html?data={%22role%22:%22driver%22,%20%22id%22:%221046779538684826%22}
+var DELTANUMBER = 5; //ERROR NUMBER IN 5 METER
 
 var id = "";
 var json = "";
@@ -40,6 +38,7 @@ function initialize() {
     executeAsync(function(id) {
         DetectLocation(id, 20, true);
     });
+    // ******************************************************************************************** DETECT CURRENT POSITION TIME SET POSITION
 
     // driver: {"role":"driver","id":"678671252207481", "pid": ["pid": "1046779538684826"]}
     // return name, path
@@ -79,9 +78,11 @@ function initialize() {
     }
 
     // get others' location from database with "second"
-    executeAsync(function() {
-        GetOthersLocation(strLocation, 20, true);
-    });
+    if (strLocation) {
+        executeAsync(function() {
+            GetOthersLocation(strLocation, 20, true);
+        });
+    }
 
     ReceiverDataTake(strDriver, strPassenger, type);
 
@@ -196,7 +197,9 @@ function TrackingInput(JsonDriver, JsonPassenger, user) {
         ObjectPassenger = tmpPassList;
     }
 
-    Tracking(ObjectDriver, ObjectPassenger, user);
+    setTimeout(function(ObjectDriver, ObjectPassenger, user) {
+        Tracking(ObjectDriver, ObjectPassenger, user);
+    }, 5000, ObjectDriver, ObjectPassenger, user);
 }
 
 var GOL_SELFPOS = null;
@@ -205,7 +208,6 @@ var DRIVERINTERVALID = null;
 var PASSENGERINTERVALID = null;
 
 function Tracking(DriverData, PassengerData, user) {
-    console.log("==========***********   user is : " + user);
     //driver
     var driver;
     driver = new Driver(DriverData.name, DriverData.path);
@@ -228,12 +230,172 @@ function Tracking(DriverData, PassengerData, user) {
         }
     }
 
-    var DriverCurPos;
-    var DriverOldCurPos;
+    //driver parameter
+    var DriverCurPos = null;
+    var DriverOldCurPos = null;
+    var DriverEndPoint = DriverData.path[DriverData.path.length - 1];
 
+    //passenger paremeter
+    var PassengerCurPos = null;
+    var PassengerOldCurPos = null;
+    var PassengerGetoffPoint = null;
 
+    if (GOL_SELFPOS || GOL_FROMDATABASE) {
+        if (user == 1) {
+            DriverCurPos = GOL_SELFPOS;
+            PassengerCurPos = GOL_FROMDATABASE;
+        } else {
+            DriverCurPos = GOL_FROMDATABASE[0];
+            PassengerCurPos = [GOL_SELFPOS];
+        }
 
+        DriverOldCurPos = DriverCurPos;
+        PassengerOldCurPos = PassengerCurPos
 
+        if (DriverCurPos) {
+            driver.SetCurrentPos(DriverCurPos);
+            driver.Update(true);
+        }
+        if (PassengerCurPos) {
+            if (PassengerCurPos[0]) {
+                for (var i = 0; i < PassengerCurPos.length; i++) {
+                    passenger[i].SetCurrentPos(PassengerCurPos[i]);
+                    passenger[i].Update(true);
+                }
+            }
+        }
+    }
+
+    DRIVERINTERVALID = setInterval(function() {
+        if (GOL_SELFPOS || GOL_FROMDATABASE) {
+            if (user == 1)
+                DriverCurPos = GOL_SELFPOS;
+            else
+                DriverCurPos = GOL_FROMDATABASE[0];
+
+            if (DriverCurPos) {
+                //driver arrived end point
+                executeAsync(function() {
+                    var DisToEnd = getDistance(DriverEndPoint.lat(), DriverEndPoint.lng(), DriverCurPos.lat(), DriverCurPos.lng());
+                    // ============================================================================================= END PROCESS Driver has been at endpoint , and get off
+                    if (DisToEnd <= DELTANUMBER) {
+
+                        driver.Update(false);
+                        clearInterval(DRIVERINTERVALID);
+                    }
+                    // ============================================================================================= END PROCESS Driver has been at endpoint , and get off
+                });
+
+                if (DriverOldCurPos) {
+                    // if old point != current point
+                    if (DriverCurPos.lat() != DriverOldCurPos.lat() || DriverCurPos.lng() != DriverOldCurPos.lng()) {
+                        DriverOldCurPos = DriverCurPos;
+                        driver.SetCurrentPos(DriverCurPos);
+                        driver.Update(true);
+                    }
+                } else {
+                    // if above Driver old point not get
+                    // exec once
+                    DriverOldCurPos = DriverCurPos;
+                    driver.SetCurrentPos(DriverCurPos);
+                    driver.Update(true);
+                }
+            }
+        }
+    }, 15000);
+    // ******************************************************************************************** TRACK TIME SET POSITION
+
+    PASSENGERINTERVALID = setInterval(function() {
+        if (GOL_SELFPOS || GOL_FROMDATABASE) {
+            if (user == 1)
+                PassengerCurPos = GOL_FROMDATABASE;
+            else
+                PassengerCurPos = [GOL_SELFPOS];
+
+            for (var i = 0; i < passenger.length; i++) {
+                if (!DriverCurPos || !PassengerCurPos[i])
+                    continue;
+                // following is points needed
+                // passenger get in car point
+                var PointPgincp = passenger[i].GetGetPoint();
+                // passenger get out off car point
+                var PointPgoocp = passenger[i].GetDownPoint();
+                // this passenger current point
+                var PointPcp = PassengerCurPos[i];
+                // Driver current point
+                var PointDcp = DriverCurPos;
+
+                // following is four distance
+                // passenger to driver current point distance
+                var DisPcp2dcp;
+                // cal passenger current point to passenger get in car point
+                var DisPcp2pgicp;
+                // cal passenger current point to his get out off car point
+                var DisPcp2pgoocp;
+                // cal driver current point to passenger get out off car point
+                var DisDcp2pgoocp;
+
+                if (PassengerCurPos) {
+                    if (PassengerCurPos[0]) {
+                        // judge passenger whether get in car
+                        // cal passenger to driver current point distance
+                        // cal passenger current point to passenger get in car point
+                        executeAsync(function() {
+                            //DISTANCE
+                            DisPcp2dcp = getDistance(PointPcp.lat(), PointPcp.lng(), PointDcp.lat(), PointDcp.lng());
+                            DisPcp2pgicp = getDistance(PointPcp.lat(), PointPcp.lng(), PointPgincp.lat(), PointPgincp.lng());
+                            // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
+                            //GET IN CAR
+                            if (DisPcp2pgicp <= DELTANUMBER && DisPcp2dcp <= DELTANUMBER) {
+                                passenger[i].Getin(driver);
+                                passenger[i].Update(false);
+                                clearInterval(PassInterval);
+                            }
+                            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END PROCESS
+                        });
+
+                        // judge passenger whether get off car
+                        // cal passenger current point to his get out off car point
+                        // cal driver current point to passenger get out off car point
+                        executeAsync(function() {
+                            DisPcp2pgoocp = getDistance(PointPcp.lat(), PointPcp.lng(), PointPgoocp.lat(), PointPgoocp.lng());
+                            DisDcp2pgoocp = getDistance(PointDcp.lat(), PointDcp.lng(), PointPgoocp.lat(), PointPgoocp.lng());
+                            // vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv END PROCESS
+                            //GET OUT OF CAR
+                            if (DisPcp2pgoocp <= DELTANUMBER && DisDcp2pgoocp <= DELTANUMBER)
+                                passenger[i].Getoutof(driver);
+                            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END PROCESS
+                        });
+                    }
+                }
+            }
+
+            if (PassengerCurPos) {
+                if (PassengerCurPos[0]) {
+                    if (PassengerOldCurPos) {
+                        if (PassengerOldCurPos[0]) {
+                            for (var i = 0; i < PassengerCurPos.length; i++) {
+                                if (PassengerCurPos[i].lat() != PassengerOldCurPos[i].lat() || PassengerCurPos[i].lng() != PassengerOldCurPos[i].lng()) {
+                                    PassengerOldCurPos[i] = PassengerCurPos[i];
+                                    passenger[i].SetCurrentPos(PassengerCurPos[i]);
+                                    passenger[i].Update(true);
+                                }
+                            }
+                        } else {
+                            for (var i = 0; i < PassengerCurPos.length; i++) {
+                                PassengerOldCurPos[i] = PassengerCurPos[i];
+                                passenger[i].SetCurrentPos(PassengerCurPos[i]);
+                                passenger[i].Update(true);
+                            }
+                        }
+                    } else {
+                        PassengerOldCurPos = PassengerCurPos;
+                    }
+                }
+            }
+        }
+    }, 15000);
+    // ******************************************************************************************** TRACK TIME SET POSITION
 }
 
 /*
@@ -619,9 +781,11 @@ var Driver = function(_name, _path) {
             var Lists = response.rows[0].elements;
             var DistanceList = [];
 
+            // push all distance to distance list
             for (var i = 0; i < Lists.length; i++)
                 DistanceList.push(Lists[i].distance.value);
 
+            // find the min distance point in array and its index
             var MinIndex = 0;
             var minIndexLoopMin = DistanceList[0];
             for (var i = 1; i < DistanceList.length; i++) {
@@ -631,6 +795,7 @@ var Driver = function(_name, _path) {
                 }
             }
 
+            // get the target point which we want display on screen
             var TargetPoint = null;
             for (var i = 0; i < OrderPoint.length; i++) {
                 if (OrderPoint[i] != null) {
@@ -644,28 +809,14 @@ var Driver = function(_name, _path) {
             var TypeName = "";
             var PassName;
             var TTStext;
-            if (OrderPoint.length == 0) {
-                TargetPoint = des[0];
-            } else {
-                try {
-                    PassName = PassList[TargetPoint.id].GetName();
-                } catch (e) {
-                    console.log('TargetPoint');
-                    console.log(TargetPoint);
-                    console.log('MinIndex');
-                    console.log(MinIndex);
-                    console.log('des');
-                    console.log(des);
-                    console.log('OrderPoint');
-                    console.log(OrderPoint);
-                }
-
-
+            // use target point to get nearest point whose passenger name
+            if (TargetPoint) {
+                PassName = PassList[TargetPoint.id].GetName();
                 if (TargetPoint.type == 1) {
                     if (CurrentType != 1)
                         CurrentType = 1;
                     TypeName = "上車點";
-                } else if (TargetPoint.type == 1) {
+                } else if (TargetPoint.type == 2) {
                     if (CurrentType != 2)
                         CurrentType = 2;
                     TypeName = "下車點";
@@ -673,9 +824,6 @@ var Driver = function(_name, _path) {
             }
             ArrivalDis = Lists[MinIndex].distance.text;
             ArrivalTime = Lists[MinIndex].duration.text;
-
-            //TTS process
-
 
             //setMarker
             if (CurrentPosMarker != null)
@@ -688,7 +836,7 @@ var Driver = function(_name, _path) {
 
             var infocontent;
 
-            if (OrderPoint.length != 0) {
+            if (TargetPoint) {
                 infocontent = '<div>距離乘客: ' + PassName + ' 的' + TypeName + '<br> ' + ArrivalDis + '/ ' + ArrivalTime + '</div>';
                 TTStext = '距離乘客' + PassName + '的' + TypeName + '還需' + ArrivalDis + '，約' + ArrivalTime + '鐘';
             } else {
@@ -696,7 +844,10 @@ var Driver = function(_name, _path) {
                 TTStext = '距離終點還需' + ArrivalDis + '約' + ArrivalTime + '鐘';
             }
 
-            // executeAsync(speak(TTStext));
+            //TTS process
+            executeAsync(function() {
+                speak(TTStext);
+            });
 
             CurrentPosMarker = new google.maps.Marker({
                 position: CurrentPos,
@@ -763,7 +914,6 @@ Driver.prototype = {
         this.SetPassList(s_passenger);
     },
     'SetCurrentPos': function(s_currPos) { //=== 985
-        console.log(s_currPos);
         this.SetCurrentPos(s_currPos);
     },
     'SetPath': function(s_Path) {
@@ -804,10 +954,6 @@ Driver.prototype = {
                 if (tempOrderPoint[i])
                     tempDes.push(tempOrderPoint[i].pos);
             tempDes.push(Endpoint);
-            console.log(Endpoint);
-            console.log(nowPos);
-            console.log(tempOrderPoint);
-            console.log(tempDes);
             this.CalDisTime([nowPos], tempDes, this.SetCurrentPosMarker);
         } else {
             this.SetCurrentPosMarker(null, null, null, false);
@@ -880,6 +1026,7 @@ function DetectLocation(id, second, seton) {
             alert("Not support geolocation");
         }
     }
+    executeAsync(GetCurrentPos);
     var thisid = null;
     if (seton) {
         thisid = setInterval(GetCurrentPos, second * 1000);
@@ -889,9 +1036,14 @@ function DetectLocation(id, second, seton) {
 }
 
 function GetOthersLocation(data, second, seton) {
+    executeAsync(function() {
+        LocationDataTake(data);
+    });
     var thisid = null;
     if (seton) {
-        thisid = setInterval(LocationDataTake, second * 1000);
+        thisid = setInterval(function() {
+            LocationDataTake(data);
+        }, second * 1000);
     } else {
         clearInterval(thisid);
     }
@@ -926,23 +1078,23 @@ function randInt(min, max) {
 }
 
 // PhoneGap is loaded and it is now safe to make calls PhoneGap methods
-//
-// function onDeviceReady() {
-//     navigator.tts.startup(startupWin, fail);
-// }
 
-// function startupWin(result) {
-//     navigator.tts.setLanguage("zh-TW", win, fail);
-// }
+function onDeviceReady() {
+    navigator.tts.startup(startupWin, fail);
+}
 
-// function win(result) {
-//     console.log(result);
-// }
+function startupWin(result) {
+    navigator.tts.setLanguage("zh-TW", win, fail);
+}
 
-// function fail(result) {
-//     console.log("Error = " + result);
-// }
+function win(result) {
+    console.log(result);
+}
 
-// function speak(tts) {
-//     navigator.tts.speak(tts);
-// }
+function fail(result) {
+    console.log("Error = " + result);
+}
+
+function speak(tts) {
+    navigator.tts.speak(tts);
+}
