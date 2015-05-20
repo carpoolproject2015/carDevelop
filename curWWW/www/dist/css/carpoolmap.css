@@ -1,0 +1,116 @@
+html,
+body,
+#map-canvas {
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+a {
+    text-decoration: none;
+}
+
+.headerDiv {
+    height: 70px;
+    position: fixed;
+    background-color: #232323;
+    width: 100%;
+    display: inline-block;
+}
+
+.headerDiv .hd1 {
+    margin: 10px 30px 10px 10px;
+    float: left;
+}
+
+.headerDiv .hd3 {
+    margin: 0px;
+    background-color: #4e4e4e;
+    height: 100%;
+    width: 300px;
+    position: fixed;
+    top: 70px;
+    right: 0px;
+    text-align: center;
+}
+
+.mybutton {
+    border-radius: 0px;
+    font-size: 20px;
+    font-family: 微軟正黑體;
+    line-height: 20px;
+    background-color: #232323;
+    color: #fff;
+    border-color: #383838;
+    border-radius: 5px;
+    border-width: 3px;
+}
+
+.mybutton:hover {
+    color: #7b7b7b;
+    border-color: #a7a7a7;
+}
+
+.mybutton:active,
+.mybutton:focus {
+    color: #fff;
+    border-color: #383838;
+}
+
+.btnBoundFind {
+    width: 70%;
+    border-radius: 0px;
+    font-size: 20px;
+    font-family: 微軟正黑體;
+    line-height: 20px;
+    border-radius: 5px;
+    border-width: 3px;
+    margin: 30px 0px 0px 0px;
+}
+
+.map-block {
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    position: fixed;
+    top: 62px;
+}
+
+.contain {
+    top: 70px;
+    padding: 0px;
+    margin: 0px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 0px;
+}
+
+.btn-defualt {
+    width: 100%;
+    border-bottom: 2px solid #000;
+    color: #fff;
+    background-color: #232323;
+}
+
+.btn-defualt:hover {
+    background-color: #e0e0e0;
+}
