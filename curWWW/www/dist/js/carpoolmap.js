@@ -120,6 +120,9 @@ function DetectLocation(id, second, seton) {
         }
     }
     var thisid = null;
+
+    GetCurrentPos();
+
     if (seton) {
         thisid = setInterval(GetCurrentPos, second * 1000);
     } else {
@@ -168,45 +171,7 @@ function calRoute() {
 function GetUserCurrentPos() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
-            if (StartPoint) {
-                if (StartPoint.lat() != position.coords.latitude || StartPoint.lng() != position.coords.longitude) {
-                    if (StartPointMarker != null)
-                        StartPointMarker.setMap(null);
 
-                    StartPoint = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-                    if (StartPoint != null)
-                        StartPointStatus = true;
-
-                    StartPointMarker = new google.maps.Marker({
-                        position: StartPoint,
-                        map: map,
-                        icon: 'img/start_pin.png',
-                        title: 'Start Point'
-                    });
-
-                    map.setCenter(StartPoint);
-                }
-            } else {
-                if (StartPointMarker != null)
-                    StartPointMarker.setMap(null);
-
-                StartPoint = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-
-                alert(position.coords.latitude + ', ' + position.coords.longitude);
-
-                if (StartPoint != null)
-                    StartPointStatus = true;
-
-                StartPointMarker = new google.maps.Marker({
-                    position: StartPoint,
-                    map: map,
-                    icon: 'img/start_pin.png',
-                    title: 'Start Point'
-                });
-
-                map.setCenter(StartPoint);
-            }
         }, function(error) {
             switch (error.code) {
                 case error.PERMISSION_DENIED:
